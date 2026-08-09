@@ -77,6 +77,7 @@
 ### 4.1 文件布局
 ```
 D:\09-opencode\devflow\
+  install.mjs                        # 跨平台安装器:把框架装进已有项目(内嵌 openspec/config 模板)
   opencode.json                      # instructions: ["devflow-rules.md"] — 自动加载规则到 context
   AGENTS.md                          # 瘦桩:指路 + /init 防护(/init 只改此桩)
   .opencode/commands/
@@ -87,7 +88,6 @@ D:\09-opencode\devflow\
     devflow-audit.md                 # /devflow:audit
     devflow-archive.md               # /devflow:archive
   .opencode/skills/openspec-*/       # 8 个 openspec skill(vendored)
-  openspec/config.yaml               # OpenSpec 配置
   .gitignore
   devflow-rules.md              # 真相源:6 阶段 + 全局规则 + checklist(/init 不碰)
   docs/devflow-design.md             # 本设计文档

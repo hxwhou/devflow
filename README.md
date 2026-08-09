@@ -67,7 +67,6 @@ devflow/
   devflow-rules.md              # 真相源:6 阶段 + 全局规则 + 规模判定
   .opencode/commands/           # 6 个 /devflow:* 命令薄壳
   .opencode/skills/openspec-*/  # 8 个 vendored openspec skill
-  openspec/config.yaml          # OpenSpec 配置
   docs/
     devflow-design.md           # 设计文档(选型/思路/取舍)
 ```

@@ -13,6 +13,29 @@ const TARGET = resolve(process.argv[2] || process.cwd());
 const START = '<!-- devflow:start -->';
 const END = '<!-- devflow:end -->';
 
+const CONFIG_YAML = `schema: spec-driven
+
+# Project context (optional) — add your tech stack / conventions / domain
+# context: |
+#   Tech stack: ...
+#   Domain: ...
+
+# Per-artifact rules (optional)
+# devflow convention: tasks use TDD sub-steps N.M.1~5 (write test / red / impl / green / refactor)
+# rules:
+#   tasks:
+#     - Break each task into TDD sub-steps (N.M.1 write test / N.M.2 red / N.M.3 impl / N.M.4 green / N.M.5 refactor)
+
+# Per-operation guidance (optional)
+# operations:
+#   apply:
+#     guidance:
+#       - Keep test summaries concise
+#   archive:
+#     guidance:
+#       - Summarize the archive outcome before finishing
+`;
+
 async function copyDir(src, dst) {
   await mkdir(dst, { recursive: true });
   for (const e of await readdir(src, { withFileTypes: true })) {
@@ -53,10 +76,10 @@ async function mergeAgents() {
   return existing ? 'appended' : 'created';
 }
 
-async function copyIfAbsent(src, dst) {
+async function writeIfAbsent(dst, content) {
   if (existsSync(dst)) return 'exists, skipped';
   await mkdir(dirname(dst), { recursive: true });
-  await copyFile(src, dst);
+  await writeFile(dst, content, 'utf8');
   return 'created';
 }
 
@@ -80,10 +103,7 @@ async function main() {
 
   const oc = await mergeOpencodeJson();
   const ag = await mergeAgents();
-  const cfg = await copyIfAbsent(
-    join(SOURCE, 'openspec', 'config.yaml'),
-    join(TARGET, 'openspec', 'config.yaml'),
-  );
+  const cfg = await writeIfAbsent(join(TARGET, 'openspec', 'config.yaml'), CONFIG_YAML);
 
   console.log(`devflow installed into ${TARGET}`);
   console.log(`  - devflow-rules.md (root)`);

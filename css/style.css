@@ -43,18 +43,23 @@ html, body {
   justify-content: center;
   min-height: 440px;
 }
+.wheel-wrap {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
 #wheel {
   display: block;
-  width: 400px;
-  height: 400px;
-  max-width: 100%;
+  width: min(400px, 100%);
+  height: auto;
+  aspect-ratio: 1 / 1;
   background: #fff;
   border-radius: 50%;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 .pointer {
   position: absolute;
-  top: calc(50% - 200px - 14px);
+  top: -14px;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
@@ -151,6 +156,8 @@ html, body {
 .edit-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
 .edit-actions button { flex: 1; padding: 0.45rem; border: 1px solid var(--border); border-radius: 8px; background: var(--accent-2); color: #5a3b00; font-weight: 600; cursor: pointer; }
 #reset-default { background: #fff; color: var(--text); }
+.edit-msg { color: var(--accent); font-size: 0.78rem; min-height: 1em; margin: 0.4rem 0 0; }
+.edit-msg:empty { min-height: 0; margin: 0; }
 
 .history-list { list-style: decimal inside; margin: 0; padding: 0; max-height: 320px; overflow: auto; }
 .history-list li { padding: 0.25rem 0; border-bottom: 1px dashed var(--border); font-size: 0.85rem; }
@@ -162,7 +169,6 @@ html, body {
 /* ---- responsive ---- */
 @media (max-width: 900px) {
   .app-main { grid-template-columns: 1fr; }
-  .wheel-stage { min-height: 360px; }
-  #wheel { width: 320px; height: 320px; }
-  .pointer { top: calc(50% - 160px - 14px); }
+  .wheel-stage { min-height: 320px; }
+  #wheel { width: min(320px, 100%); }
 }

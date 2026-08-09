@@ -224,3 +224,19 @@ it('appendHistory snapshots the entry (no reference leak)', () => {
 it('clearHistory returns an empty array', () => {
   expect(storage.clearHistory()).toEqual([]);
 });
+
+it('load resets history when an entry is corrupt (per-entry validation)', () => {
+  const stored = { version: 1, prizes: VALID_PRIZES, history: [{ ts: 1, prizeId: 'a', prizeName: 'X' }, { ts: 'bad', prizeId: 'a', prizeName: 'Y' }] };
+  withLS({ 'devflow-wheel:v1': JSON.stringify(stored) }, () => {
+    const s = storage.load();
+    expect(s.prizes).toEqual(VALID_PRIZES);
+    expect(s.history).toEqual([]);
+  });
+});
+
+it('load keeps valid history entries (incl. null prizeId)', () => {
+  const hist = [{ ts: 1, prizeId: 'a', prizeName: 'X' }, { ts: 2, prizeId: null, prizeName: 'Y' }];
+  withLS({ 'devflow-wheel:v1': JSON.stringify({ version: 1, prizes: VALID_PRIZES, history: hist }) }, () => {
+    expect(storage.load().history).toEqual(hist);
+  });
+});

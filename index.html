@@ -13,9 +13,11 @@
 
   <main class="app-main">
     <section class="wheel-stage" aria-label="抽奖转盘">
-      <canvas id="wheel" width="400" height="400" aria-label="转盘"></canvas>
-      <div class="pointer" aria-hidden="true"></div>
-      <button id="spin" class="spin-btn" type="button">开始抽奖</button>
+      <div class="wheel-wrap">
+        <canvas id="wheel" width="400" height="400" aria-label="转盘"></canvas>
+        <div class="pointer" aria-hidden="true"></div>
+        <button id="spin" class="spin-btn" type="button">开始抽奖</button>
+      </div>
 
       <div id="result" class="modal hidden" role="dialog" aria-modal="true" aria-live="polite">
         <div class="modal-card">
@@ -36,6 +38,7 @@
         <button id="add-prize" type="button">添加奖品</button>
         <button id="reset-default" type="button">恢复默认</button>
       </div>
+      <p id="edit-msg" class="edit-msg" role="alert"></p>
     </section>
 
     <section class="panel history-panel" aria-label="抽奖历史">

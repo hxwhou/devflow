@@ -24,6 +24,14 @@ function isValidPrize(p) {
   return true;
 }
 
+function isValidEntry(e) {
+  if (!e || typeof e !== 'object') return false;
+  if (typeof e.ts !== 'number') return false;
+  if (e.prizeId !== null && typeof e.prizeId !== 'string') return false;
+  if (typeof e.prizeName !== 'string') return false;
+  return true;
+}
+
 function clonePrize(p) {
   return { id: p.id, name: p.name, weight: p.weight, color: p.color };
 }
@@ -72,13 +80,17 @@ export function load() {
   const versionOk = parsed.version === VERSION;
   const prizesOk = Array.isArray(parsed.prizes) && parsed.prizes.length > 0 && parsed.prizes.every(isValidPrize);
   if (versionOk && prizesOk) {
-    const historyOk = Array.isArray(parsed.history);
-    if (!historyOk) console.warn('[storage] history corrupt, resetting history only');
-    return {
-      version: VERSION,
-      prizes: parsed.prizes.map(clonePrize),
-      history: historyOk ? parsed.history.map(cloneEntry) : [],
-    };
+    let history = [];
+    if (Array.isArray(parsed.history)) {
+      if (parsed.history.every(isValidEntry)) {
+        history = parsed.history.map(cloneEntry);
+      } else {
+        console.warn('[storage] history entry corrupt, resetting history');
+      }
+    } else {
+      console.warn('[storage] history corrupt, resetting history only');
+    }
+    return { version: VERSION, prizes: parsed.prizes.map(clonePrize), history };
   }
   console.warn('[storage] invalid state, falling back to defaults');
   return defaultState();

@@ -20,15 +20,22 @@ export function renderPrizes(listEl, prizes, handlers) {
     name.type = 'text';
     name.value = p.name;
     name.title = '名称';
-    name.addEventListener('input', () => name.classList.remove('invalid'));
+    name.addEventListener('input', () => {
+      name.classList.remove('invalid');
+      const m = document.getElementById('edit-msg');
+      if (m) m.textContent = '';
+    });
     name.addEventListener('change', () => {
       const v = name.value.trim();
+      const m = document.getElementById('edit-msg');
       if (!v) {
         name.value = p.name;
         name.classList.add('invalid');
+        if (m) m.textContent = '名称不能为空';
         return;
       }
       name.classList.remove('invalid');
+      if (m) m.textContent = '';
       handlers.onEdit(i, { name: v });
     });
 

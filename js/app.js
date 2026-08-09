@@ -5,8 +5,10 @@ import * as engine from './prize-engine.js';
 import { Wheel } from './wheel.js';
 import { renderPrizes, renderHistory, showResult, setSpinning, nextColor } from './ui.js';
 
-const REDUCED = (typeof matchMedia !== 'undefined') && matchMedia('(prefers-reduced-motion: reduce)').matches;
-const DURATION = REDUCED ? 600 : 4500;
+function durationMs() {
+  const reduced = (typeof matchMedia !== 'undefined') && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return reduced ? 600 : 4500;
+}
 
 const state = { version: storage.VERSION, prizes: [], history: [] };
 let wheel;
@@ -70,7 +72,7 @@ async function doSpin() {
   setSpinning(true);
   const winner = engine.pickWinner(state.prizes);
   const target = engine.targetRotation(state.prizes, winner, wheel.getRotation());
-  await wheel.spin(target, DURATION);
+  await wheel.spin(target, durationMs());
   const prize = state.prizes[winner];
   state.history = storage.appendHistory(state.history, { ts: Date.now(), prizeId: prize.id, prizeName: prize.name });
   persist();

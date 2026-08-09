@@ -5,10 +5,10 @@
 
 ## 1. 脚手架
 
-- [ ] 1.1 页面与模块骨架
+- [x] 1.1 页面与模块骨架
   - 建 `index.html`(引入 `css/style.css` + `js/app.js` 作 `<script type="module">`;含**静态指针元素**:固定 12 点钟、绝对定位叠加 canvas 的 CSS 三角 div)、`css/style.css`(空壳含指针样式)、`js/{storage,prize-engine,wheel,ui,app}.js`(各 export 空占位)。
   - 手动验证:浏览器打开 `index.html`,console 无报错;各模块可被 import;指针 div 可见在顶部。
-- [ ] 1.2 测试 runner 骨架
+- [x] 1.2 测试 runner 骨架
   - 建 `tests/index.html`(`type="module"` import `runner.js` + 待测模块)、`tests/runner.js`(极简 `it(name,fn)` + `expect(actual,expected)` + 通过/失败计数打印到 DOM)。
   - 手动验证:打开 `tests/index.html`,显示 "0 passed / 0 failed",无 console 报错。
 

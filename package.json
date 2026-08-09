@@ -1,0 +1,11 @@
+{
+  "name": "lucky-wheel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "大转盘在线抽奖 Web 应用 — 纯前端零构建",
+  "scripts": {
+    "test": "node tests/run-node.js"
+  },
+  "license": "MIT"
+}

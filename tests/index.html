@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lucky Wheel — Tests</title>
+  <style>
+    body { font-family: ui-monospace, Consolas, monospace; padding: 1.5rem; background: #111; color: #eee; }
+    h1 { font-size: 1rem; }
+    pre { white-space: pre-wrap; background: #000; color: #6f6; padding: 1rem; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Lucky Wheel Tests</h1>
+  <pre id="results">running…</pre>
+  <script type="module">
+    // Test modules register via it(); import order matters (register before run).
+    import './storage.test.js';
+    import './engine.test.js';
+    import './wheel.test.js';
+    import { run } from './runner.js';
+    run('results');
+  </script>
+</body>
+</html>

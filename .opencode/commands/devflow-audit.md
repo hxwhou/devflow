@@ -23,4 +23,4 @@ description: devflow 阶段 5 — 代码质量 + 测试覆盖 + 评审审计
 ## 下一阶段
 完成且出口满足 → `/devflow:archive`
 
-> 详细规则见 `AGENTS.md` §audit。真相源在 AGENTS.md。
+> 详细规则见 `docs/devflow-rules.md` §audit。真相源在 docs/devflow-rules.md(opencode.json 自动加载)。

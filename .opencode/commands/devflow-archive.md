@@ -25,4 +25,4 @@ description: devflow 阶段 6 — 终验 + 合回 + worktree 清理 + OpenSpec �
 ## 下一阶段
 (完结)
 
-> 详细规则见 `AGENTS.md` §archive。真相源在 AGENTS.md。
+> 详细规则见 `docs/devflow-rules.md` §archive。真相源在 docs/devflow-rules.md(opencode.json 自动加载)。

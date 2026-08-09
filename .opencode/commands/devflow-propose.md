@@ -22,4 +22,4 @@ description: devflow 阶段 2 — 生成 OpenSpec 四件套(proposal/design/spec
 ## 下一阶段
 完成且出口满足 → `/devflow:review`
 
-> 详细规则见 `AGENTS.md` §propose。真相源在 AGENTS.md。
+> 详细规则见 `docs/devflow-rules.md` §propose。真相源在 docs/devflow-rules.md(opencode.json 自动加载)。

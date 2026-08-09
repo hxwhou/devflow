@@ -28,6 +28,7 @@
 | 5 | 创建位置 | 新仓库 / 就地 easyflow-test | **新仓库 D:\09-opencode\devflow** | 干净独立,不污染分析仓 |
 | 6 | openspec skills 来源 | vendor / 跑 openspec init | **vendor 进模板** | 自包含,git clone 即用,免二次 init |
 | 7 | vendor 范围 | 全 11 个 / 只用到的 | **只用到的 8 个** | 用户要求精简;验依赖后定 8(见 §4.3) |
+| 8 | /init 防护 | 现状靠 git / 重构 opencode.json instructions | **重构** | /init 对已存在 AGENTS.md 是 merge(不毁但污染);rules 挪出 AGENTS.md + 用官方 instructions 自动加载(见 §3.8) |
 
 ## 3. 实现思路与逻辑(关键决策)
 
@@ -65,12 +66,18 @@
 - **决策**:每阶段结束打 `[devflow] ...` 状态行。
 - **逻辑**:轻量可见性,替代 easyflow H8。纯约定,无 hook 强制。
 
+### 3.8 防 /init 污染(AGENTS.md 瘦桩 + opencode.json instructions)
+- **决策**:框架真内容放 `docs/devflow-rules.md`;`AGENTS.md` 只留瘦桩;`opencode.json` 的 `instructions` 字段把 rules 文件自动注入 context(与 AGENTS.md 合并)。
+- **逻辑**:opencode `/init` 对已存在的 AGENTS.md 是"原地改进"(merge),不毁但会塞入其代码分析污染真相源。rules 文件不在 AGENTS.md 路径,/init 不碰;瘦桩任其改,`git restore AGENTS.md` 即恢复。用 opencode 官方推荐的 `instructions` 机制(见 opencode docs Rules 页)保留 always-on context。
+- **对比 easyflow**:easyflow 的 AGENTS.md 是自写分析仓的、不暴露给 /init;devflow 作为可分发模板必须考虑用户跑 /init 的场景。
+
 ## 4. 框架结构
 
 ### 4.1 文件布局
 ```
 D:\09-opencode\devflow\
-  AGENTS.md                          # 总览:6 阶段 + skill map + 全局规则(自动加载)
+  opencode.json                      # instructions: ["docs/devflow-rules.md"] — 自动加载规则到 context
+  AGENTS.md                          # 瘦桩:指路 + /init 防护(/init 只改此桩)
   .opencode/commands/
     devflow-brainstorm.md            # /devflow:brainstorm
     devflow-propose.md               # /devflow:propose
@@ -81,7 +88,8 @@ D:\09-opencode\devflow\
   .opencode/skills/openspec-*/       # 8 个 openspec skill(vendored)
   openspec/config.yaml               # OpenSpec 配置
   .gitignore
-  docs/devflow-design.md             # 本文档
+  docs/devflow-rules.md              # 真相源:6 阶段 + 全局规则 + checklist(/init 不碰)
+  docs/devflow-design.md             # 本设计文档
 ```
 - superpowers:全局 opencode 插件,**不 vendor**(引用即可)
 - openspec skills:**vendor**(纯 markdown,自包含)
@@ -110,14 +118,17 @@ D:\09-opencode\devflow\
 
 **不 vendor(4 个)**:openspec-ff-change / openspec-bulk-archive-change / openspec-onboard / openspec-update-change
 
-### 4.4 AGENTS.md 内容大纲
-- 定位(一句话)
-- 前置依赖(opencode+superpowers 全局;openspec CLI;openspec skills 已 vendor)
-- 6 阶段总览表
-- 全局规则(change_id 统一键 / worktree 用 superpowers / TDD prose 约定 / apply 条件式判定 / [devflow] 状态行)
-- 每阶段入口/出口 checklist(prose)
-- 取舍说明(砍 easyflow 什么、保留什么)
-- 命令清单
+### 4.4 AGENTS.md(瘦桩)+ docs/devflow-rules.md(真相源)
+- **AGENTS.md 瘦桩**:一句话定位 + 指路(`/devflow:brainstorm` 开始)+ rules 已自动加载的说明 + /init 防护提醒
+- **docs/devflow-rules.md 真相源**(opencode.json `instructions` 自动加载):
+  - 定位(一句话)
+  - 前置依赖(opencode+superpowers 全局;openspec CLI;openspec skills 已 vendor)
+  - 6 阶段总览表
+  - 全局规则(change_id 统一键 / worktree 用 superpowers / TDD prose 约定 / apply 条件式判定 / [devflow] 状态行)
+  - 每阶段入口/出口 checklist(prose)
+  - 取舍说明(砍 easyflow 什么、保留什么)
+  - 命令清单
+- **opencode.json**:`{ "$schema": "...", "instructions": ["docs/devflow-rules.md"] }`
 
 ### 4.5 命令薄壳模板
 ```
@@ -131,7 +142,7 @@ description: "<阶段一句话>"
 ## 出口 checklist
 ## 下一阶段 → /devflow:<next>
 ```
-真相源在 AGENTS.md,命令只按需注入该阶段指南。
+真相源在 docs/devflow-rules.md(opencode.json 自动加载),命令只按需注入该阶段指南。
 
 ## 5. 相对 easyflow 的取舍
 
@@ -167,7 +178,7 @@ description: "<阶段一句话>"
 2. 写 `.gitignore`(`.harness/`、`node_modules/`、`*.log`、`.DS_Store`、`Thumbs.db`、`*.tmp`)
 3. Vendor 8 个 openspec skill(从 `easyflow-demo/.opencode/skills/openspec-*/` 拷净,已验零 easyflow 耦合)
 4. 写 `openspec/config.yaml`(最小配置)
-5. 写 `AGENTS.md`(真相源)
+5. 写 `AGENTS.md`(瘦桩)+ `opencode.json`(instructions)+ `docs/devflow-rules.md`(真相源)
 6. 写 6 个命令薄壳 `.opencode/commands/devflow-*.md`
 7. `git add -A` + commit `feat: devflow framework — pure-doc orchestration of openspec + superpowers`
 8. 验证:tree 列表;抽检 AGENTS.md + 一个命令 frontmatter;(可选)小变更试跑 `/devflow:brainstorm`

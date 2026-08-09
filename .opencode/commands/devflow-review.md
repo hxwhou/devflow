@@ -23,4 +23,4 @@ description: devflow 阶段 3 — 工程评审、找漏洞、锁定计划
 ## 下一阶段
 完成且出口满足 → `/devflow:apply`
 
-> 详细规则见 `AGENTS.md` §review。真相源在 AGENTS.md。
+> 详细规则见 `docs/devflow-rules.md` §review。真相源在 docs/devflow-rules.md(opencode.json 自动加载)。

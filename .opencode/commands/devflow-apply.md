@@ -24,4 +24,4 @@ description: devflow 阶段 4 — worktree 隔离 + 逐 task TDD 实施
 ## 下一阶段
 完成且出口满足 → `/devflow:audit`
 
-> 详细规则见 `AGENTS.md` §apply。真相源在 AGENTS.md。
+> 详细规则见 `docs/devflow-rules.md` §apply。真相源在 docs/devflow-rules.md(opencode.json 自动加载)。

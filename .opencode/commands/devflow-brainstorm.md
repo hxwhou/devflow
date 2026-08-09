@@ -23,4 +23,4 @@ description: devflow 阶段 1 — 探索意图、澄清需求、确定设计方�
 ## 下一阶段
 完成且出口满足 → `/devflow:propose`
 
-> 详细规则见 `AGENTS.md` §brainstorm。真相源在 AGENTS.md,本文件只是按需注入。
+> 详细规则见 `docs/devflow-rules.md` §brainstorm。真相源在 docs/devflow-rules.md(opencode.json 自动加载),本文件只是按需注入。

@@ -19,9 +19,12 @@ const TARGET = resolve(process.argv[2] || process.cwd());
 const START = '<!-- devflow:start -->';
 const END = '<!-- devflow:end -->';
 
-// devflow workflow uses these 11 superpowers skills (core 7 + conditional 4).
-// NOT copied: using-superpowers (bootstrap, harness auto-loads from global),
-// writing-skills (meta), subagent-driven-development (alternative to executing-plans).
+// devflow workflow uses these 12 superpowers skills (core 7 + conditional 5).
+// NOT copied: using-superpowers (bootstrap — devflow-rules.md replaces its orchestration),
+// writing-skills (meta, not referenced by devflow).
+// Runtime is plugin-less: these local copies + devflow-rules.md suffice. On Windows the
+// superpowers plugin + a project .opencode/skills/ dir hangs opencode bootstrap, so users
+// disable the plugin globally (see README 前置依赖). The plugin is install-time copy source only.
 const SUPERPOWERS_SKILLS = [
   'brainstorming',
   'writing-plans',
@@ -32,6 +35,7 @@ const SUPERPOWERS_SKILLS = [
   'finishing-a-development-branch',
   'dispatching-parallel-agents',
   'executing-plans',
+  'subagent-driven-development',
   'systematic-debugging',
   'receiving-code-review',
 ];

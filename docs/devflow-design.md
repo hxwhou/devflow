@@ -92,7 +92,7 @@ D:\09-opencode\devflow\
   devflow-rules.md              # 真相源:6 阶段 + 全局规则 + checklist(/init 不碰)
   docs/devflow-design.md             # 本设计文档
 ```
-- skills 绝大多数不预置:install 时 `openspec init` 现取 6 个 openspec skill(canonical)+ 从全局 superpowers 复制 11 个;唯独 verify/new/continue-change 这 3 个 init 不生成,devflow 仓库 vendor 补拷
+- skills 绝大多数不预置:install 时 `openspec init` 现取 6 个 openspec skill(canonical)+ 从全局 superpowers 复制 12 个;唯独 verify/new/continue-change 这 3 个 init 不生成,devflow 仓库 vendor 补拷
 
 ### 4.2 六阶段 skill 映射
 | 阶段 | 命令 | 入口 skill | 产出 | 出口 |
@@ -194,9 +194,9 @@ description: "<阶段一句话>"
 - init 后删 `/opsx-*` 命令(只留 skills;devflow 用 `/devflow:*` 包装,不要 openspec 的直发命令)
 - `openspec-verify-change`(archive full)/ `openspec-new-change`、`openspec-continue-change`(propose 备选)——init 默认不生成,devflow 仓库 vendor 这 3 个(1.8.0 canonical 内容)补拷
 
-### Superpowers(install 时从全局复制 11 个)
+### Superpowers(install 时从全局复制 12 个)
 - **核心 7**:brainstorming / writing-plans / using-git-worktrees / test-driven-development / requesting-code-review / verification-before-completion / finishing-a-development-branch
-- **条件/按需 4**:dispatching-parallel-agents / executing-plans(或 subagent-driven-development)/ systematic-debugging(出 bug 时)/ receiving-code-review(收到评审反馈时)
-- **不复制**:using-superpowers(bootstrap,harness 自动从全局加载)/ writing-skills(meta)/ subagent-driven-development(executing-plans 的备选,留全局兜底)
+- **条件/按需 5**:dispatching-parallel-agents / executing-plans / subagent-driven-development(后两者均为 apply 的可选驱动器)/ systematic-debugging(出 bug 时)/ receiving-code-review(收到评审反馈时)
+- **不复制**:using-superpowers(bootstrap,由 devflow-rules.md 每阶段 `skill("...")` 编排替代)/ writing-skills(meta,devflow 不引用)
 
-Superpowers 复制 11(核心 7 + 条件 4);OpenSpec 由 init 提供 canonical 集。
+Superpowers 复制 12(核心 7 + 条件 5);OpenSpec 由 init 提供 canonical 集。运行时 plugin-less(尤其 Windows:插件 + `.opencode/skills/` 挂 opencode bootstrap,需禁用插件),靠本地副本 + rules 编排。

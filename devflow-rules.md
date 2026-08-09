@@ -3,8 +3,9 @@
 > 6 阶段 workflow + 全局规则 + 规模判定。每阶段入口/出口 checklist 见 `.opencode/commands/devflow-*.md`(按需注入);设计取舍见 `docs/devflow-design.md`。
 
 ## 前置依赖
-- openspec CLI(`@fission-ai/openspec` 或 `@studyzy/openspec-cn`,Node ≥20.19)+ superpowers 全局插件(marketplace)
-- skills 不在仓库:`install.mjs` 跑 `openspec init` + 从全局 superpowers 复制 11 个(install 时现取)
+- openspec CLI(`@fission-ai/openspec` 或 `@studyzy/openspec-cn`,Node ≥20.19)+ superpowers 全局插件(marketplace,仅 install 时作复制源)
+- skills 不在仓库:`install.mjs` 跑 `openspec init` + 从全局 superpowers 复制 12 个(install 时现取)
+- 运行时 plugin-less:本地 skill 副本 + 本规则按名字编排(每阶段 `skill("...")`),不依赖 superpowers 插件运行时介入。Windows 上插件 + `.opencode/skills/` 会挂 opencode bootstrap,装完需禁用插件(见 README)。
 
 ## 规模判定(入口 `/devflow:brainstorm`,代理自判)
 

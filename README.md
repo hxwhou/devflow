@@ -14,10 +14,12 @@ brainstorm → propose → review → apply → audit → archive
 
 ## 前置依赖
 
-- **opencode** + **superpowers 插件**(全局,opencode marketplace 装)——install 时作 superpowers skills 复制源
+- **opencode** + **superpowers 插件**(全局,opencode marketplace 装)——仅 install 时作 superpowers skills 复制源;运行时 devflow 用本地 skill 副本 + `devflow-rules.md` 编排,不依赖插件
 - **openspec CLI**(`@fission-ai/openspec` 或 `@studyzy/openspec-cn`,Node ≥20.19)
 
-> openspec skills 由 `openspec init` 现取(canonical、最新);superpowers skills 从全局安装复制 11 个。devflow 仓库只 vendor 3 个 init 不生成的 openspec 补 skill(verify/new/continue-change),其余不预置。
+> openspec skills 由 `openspec init` 现取(canonical、最新);superpowers skills 从全局安装复制 12 个。devflow 仓库只 vendor 3 个 init 不生成的 openspec 补 skill(verify/new/continue-change),其余不预置。
+
+> ⚠️ **Windows**:superpowers 插件 + 项目 `.opencode/skills/` 会挂起 opencode bootstrap(上游 bug)。装完 devflow 后禁用插件:把 `~/.config/opencode/opencode.jsonc` 里 `"plugin": [...]` 注释掉即可。devflow 用本地 skill 副本运行,不受影响。
 
 ## 怎么用
 
@@ -32,8 +34,11 @@ git clone https://github.com/hxwhou/devflow.git
 
 node ./devflow/install.mjs .
 
-# 装完删掉安装源(一次性;Windows PowerShell 用 Remove-Item -Recurse -Force devflow)
+# 装完删掉安装源(一次性)
 rm -rf devflow
+
+# Windows PowerShell 用以下命令
+Remove-Item -Recurse -Force devflow
 
 # 启动
 opencode
@@ -41,7 +46,7 @@ opencode
 
 在 opencode 里跑 `/devflow:brainstorm`,或直接说"建一个 X 功能"——agent 读 `AGENTS.md` + `devflow-rules.md` 自动按流程走。
 
-**`install.mjs` 干了什么**:跑 `openspec init` 现取 openspec skills + `openspec/config.yaml`,删 openspec 的 `/opsx-*` 命令(devflow 用 `/devflow:*`);补拷 3 个 init 不生成的 openspec skill(verify/new/continue-change,devflow 仓库 vendor);从全局 superpowers 复制 11 个 workflow skill;复制 `devflow-rules.md` + 6 命令薄壳;合并 `opencode.json`(加 `instructions: ["devflow-rules.md"]`)和 `AGENTS.md`(注入标记块,**不碰你已有的内容**)。幂等,可重跑。零依赖,跨平台(Node ≥20.19 本就是 openspec CLI 前置)。
+**`install.mjs` 干了什么**:跑 `openspec init` 现取 openspec skills + `openspec/config.yaml`,删 openspec 的 `/opsx-*` 命令(devflow 用 `/devflow:*`);补拷 3 个 init 不生成的 openspec skill(verify/new/continue-change,devflow 仓库 vendor);从全局 superpowers 复制 12 个 workflow skill;复制 `devflow-rules.md` + 6 命令薄壳;合并 `opencode.json`(加 `instructions: ["devflow-rules.md"]`)和 `AGENTS.md`(注入标记块,**不碰你已有的内容**)。幂等,可重跑。零依赖,跨平台(Node ≥20.19 本就是 openspec CLI 前置)。
 
 **代理自判 route**:agent 读完你的请求即判走哪条,打 `[devflow] 判定 ...`,你可一句话覆盖。
 - **fast-track**(小改动:单文件 / ≤5 task / 无跨切面):一条龙串接 propose→apply→archive,跳 review/audit,pre-design 留对话不落盘

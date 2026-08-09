@@ -1,6 +1,6 @@
 # devflow
 
-> 纯文档编排 **openspec + superpowers** 的编程框架。一份 markdown 约定,告诉 agent 按顺序调哪些 skill,把"想法"变成"上线"。无代码、无脚本、无安装工具。
+> 纯文档编排 **openspec + superpowers** 的编程框架。一份 markdown 约定,告诉 agent 按顺序调哪些 skill,把"想法"变成"上线"。运行时零代码、零依赖。
 
 ## 这是什么
 
@@ -10,27 +10,39 @@ devflow 用一条 6 阶段 workflow 把 openspec(spec-driven)和 superpowers(过
 brainstorm → propose → review → apply → audit → archive
 ```
 
-框架本身只是一堆 markdown(`AGENTS.md` 瘦桩 + `devflow-rules.md` 真相源 + 6 个 slash 命令薄壳)。相对同类框架砍掉了所有机制层(bash hooks / scorers / agent-selector / install tooling),直接用原生 skill 编排,自己只掌控 workflow——详见 [docs/devflow-design.md](docs/devflow-design.md)。
+框架本身只是一堆 markdown(`AGENTS.md` 瘦桩 + `devflow-rules.md` 真相源 + 6 个 slash 命令薄壳)。相对同类框架砍掉了运行时机制层(bash hooks / scorers / policies / agent-selector),直接用原生 skill 编排,自己只掌控 workflow——详见 [docs/devflow-design.md](docs/devflow-design.md)。
 
 ## 前置依赖
 
 - **opencode** + **superpowers 插件**(全局,marketplace 装)
 - **openspec CLI**(`@fission-ai/openspec` 或 `@studyzy/openspec-cn`,Node ≥20.19)
-- openspec skills 已 vendor 进模板(`.opencode/skills/openspec-*/`),无需再 init
+- openspec skills 已 vendor,`install.mjs` 自动复制进你的项目(`.opencode/skills/openspec-*/`)
 
 ## 怎么用
 
+devflow 装进**你自己的项目**里用(不是把你的项目塞进 devflow)。
+
 ```bash
-git clone https://github.com/hxwhou/devflow.git
-cd devflow
+# 一次性:把 devflow 拉到本地当安装源(任意位置,只拉一次)
+git clone https://github.com/hxwhou/devflow.git ~/devflow
+
+# 装进你的项目
+cd /path/to/your-project
+node ~/devflow/install.mjs .
+
+# 启动
 opencode
 ```
 
 在 opencode 里跑 `/devflow:brainstorm`,或直接说"建一个 X 功能"——agent 读 `AGENTS.md` + `devflow-rules.md` 自动按流程走。
 
+**`install.mjs` 干了什么**:复制 `devflow-rules.md` + 6 命令薄壳 + 8 个 openspec skill;合并 `opencode.json`(加 `instructions: ["devflow-rules.md"]`)和 `AGENTS.md`(注入标记块,**不碰你已有的内容**);`openspec/config.yaml` 仅当不存在才落。幂等,可重跑。零依赖,跨平台(Node ≥20.19 本就是 openspec CLI 前置)。
+
 **代理自判 route**:agent 读完你的请求即判走哪条,打 `[devflow] 判定 ...`,你可一句话覆盖。
 - **fast-track**(小改动:单文件 / ≤5 task / 无跨切面):一条龙串接 propose→apply→archive,跳 review/audit,pre-design 留对话不落盘
 - **full**(大改动:跨模块 / auth / 迁移):逐阶段 6 步,每阶段出口停下等你
+
+> 也可直接 `git clone` 本仓库当一个新项目的起点(此时无需安装脚本)。
 
 ## 6 阶段
 
@@ -49,6 +61,7 @@ opencode
 
 ```
 devflow/
+  install.mjs                   # 跨平台安装器:把自己装进目标项目
   opencode.json                 # instructions: ["devflow-rules.md"] — 自动加载规则
   AGENTS.md                     # 瘦桩:指路
   devflow-rules.md              # 真相源:6 阶段 + 全局规则 + 规模判定

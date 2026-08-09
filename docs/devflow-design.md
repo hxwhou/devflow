@@ -21,12 +21,12 @@
 
 | # | 分叉 | 选项 | 选择 | 理由 |
 |---|---|---|---|---|
-| 1 | 框架形态 | 纯文档约定 / 个人配置 / 可分发插件 | **纯文档约定** | 最简、零安装、单点维护;砍掉所有 install/打包复杂度 |
+| 1 | 框架形态 | 纯文档约定 / 个人配置 / 可分发插件 | **纯文档约定 + install.mjs** | 运行时最简、单点维护;一个跨平台 Node 脚本把框架装进已有项目(零新依赖,Node 本就是 openspec CLI 前置) |
 | 2 | 阶段数 | 3 / 4 / 6 | **6**(brainstorm→propose→review→apply→audit→archive) | 沿用 easyflow 验证过的形状,但每阶段直接调原生 skill |
 | 3 | apply 执行 | inline / superpowers 原生 subagent / 条件式 | **条件式** | 默认 inline 保控制力;≥4 无依赖 task 才并行 |
 | 4 | 文档结构 | 单 AGENTS.md / AGENTS.md+命令 / 单 skill | **AGENTS.md + 6 个 /devflow 命令薄壳** | AGENTS.md 是单一真相源,命令只按需注入该阶段指南;ergonomic + 仍 100% markdown |
 | 5 | 创建位置 | 新仓库 / 就地 easyflow-test | **新仓库 D:\09-opencode\devflow** | 干净独立,不污染分析仓 |
-| 6 | openspec skills 来源 | vendor / 跑 openspec init | **vendor 进模板** | 自包含,git clone 即用,免二次 init |
+| 6 | openspec skills 来源 | vendor / 跑 openspec init | **vendor** | install.mjs 复制进目标项目;git clone 亦可直接当模板,免二次 init |
 | 7 | vendor 范围 | 全 11 个 / 只用到的 | **只用到的 8 个** | 用户要求精简;验依赖后定 8(见 §4.3) |
 | 8 | /init 防护 | 现状靠 git / 重构 opencode.json instructions | **重构** | /init 对已存在 AGENTS.md 是 merge(不毁但污染);rules 挪出 AGENTS.md + 用官方 instructions 自动加载(见 §3.8) |
 
@@ -69,6 +69,7 @@
 ### 3.8 防 /init 污染(AGENTS.md 瘦桩 + opencode.json instructions)
 - **决策**:框架真内容放 `devflow-rules.md`;`AGENTS.md` 只留瘦桩;`opencode.json` 的 `instructions` 字段把 rules 文件自动注入 context(与 AGENTS.md 合并)。
 - **逻辑**:opencode `/init` 对已存在的 AGENTS.md 是"原地改进"(merge),不毁但会塞入其代码分析污染真相源。rules 文件不在 AGENTS.md 路径,/init 不碰;瘦桩任其改,`git restore AGENTS.md` 即恢复。用 opencode 官方推荐的 `instructions` 机制(见 opencode docs Rules 页)保留 always-on context。
+- **drop-in 注入**:`install.mjs` 把瘦桩以 `<!-- devflow:start -->…<!-- devflow:end -->` 标记块注入用户**已有** `AGENTS.md`(有则替换、无则追加,幂等),不碰用户自有内容;`opencode.json` 同理 merge `instructions`(去重),`openspec/config.yaml` 仅当不存在才落。
 - **对比 easyflow**:easyflow 的 AGENTS.md 是自写分析仓的、不暴露给 /init;devflow 作为可分发模板必须考虑用户跑 /init 的场景。
 
 ## 4. 框架结构
@@ -154,7 +155,7 @@ description: "<阶段一句话>"
 | policies 子文件 | 直接用 superpowers:brainstorming 自带 |
 | hard-stops(H8/H10/H13) | 不需要;直接用 superpowers 原生 subagent 路径 |
 | agent-selector | apply 条件式自决 |
-| install tooling | 纯模板,git clone 即用 |
+| install tooling | install.mjs(Node,跨平台,零依赖);或 git clone 当模板 |
 | .harness 运行时态 | checkpoint 进 openspec change 目录 |
 | tasks-lint.sh | TDD 改 prose 约定 |
 | per-task TDD(fast-track) | fast-track 改模块级 TDD(一模块全测→RED→实现→GREEN),省 ~70 工具往返 |

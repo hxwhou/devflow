@@ -83,26 +83,26 @@
 
 ## 5. UI 层(js/ui.js)— DOM,手动验证
 
-- [ ] 5.1 编辑面板(增删改 + 校验 + 最后一个保护 + 自动取色)
+- [x] 5.1 编辑面板(增删改 + 校验 + 最后一个保护 + 自动取色)
   - 渲染奖品行(名称 input、权重 input、颜色 picker、删除按钮);「添加奖品」(新奖品颜色按 `DEFAULT_PALETTE[index%len]` 循环取,与前一扇形同色则取下一个不同色)、「恢复默认」(二次确认);权重 input `blur` 经 `normalizeWeight` 写回并 clamp 显示;空名阻止保存并内联提示「名称不能为空」;仅剩 1 项时禁用其删除按钮。
   - 手动验证:增删改即时重绘盘面 + 持久化;删到最后一个删除按钮变灰;空名出现提示且不保存;新增奖品自动有合理颜色且不与邻居撞色;「恢复默认」弹确认。
-- [ ] 5.2 历史面板
+- [x] 5.2 历史面板
   - 渲染最近 50 条(`ts` 格式化时间 + `prizeName`);「清空」二次确认。
   - 手动验证:抽奖后历史增长;改/删奖品后旧条目仍显示当时名;满 50 后旧条滚出;清空后清空且刷新仍空。
-- [ ] 5.3 结果弹窗
+- [x] 5.3 结果弹窗
   - 落定后弹遮罩 + 「中奖:XXX」+「再抽一次」/「关闭」;关闭后解锁 start(与编辑面板)。
   - 手动验证:弹窗出现正确奖品名;关闭后可再抽、编辑面板恢复可用。
 
 ## 6. 启动与联调(js/app.js)— 集成,手动验证
 
-- [ ] 6.1 启动:`storage.load()` → 校验失败回退默认 → `wheel.setPrizes(state.prizes)` + 渲染编辑表单 + 渲染历史。
-- [ ] 6.2 抽奖链路:点「开始」→ 禁用 start **与编辑面板** → `winner=pickWinner(prizes)` → `target=targetRotation(prizes, winner, wheel.getRotation())` → `await wheel.spin(target, dur, ease)`(wheel 落定后自管 `this.rotation`,无需 app 回写)→ 弹窗 + `state.history=appendHistory(state.history, {ts:Date.now(), prizeId:prizes[winner].id, prizeName:prizes[winner].name})` + `save(state)` → 解锁。
-- [ ] 6.3 编辑变更处理:输入/增删/恢复默认 → 更新 `state.prizes` + `wheel.setPrizes` + `save(state)`。
-- [ ] 6.4 `prefers-reduced-motion`:`matchMedia('(prefers-reduced-motion: reduce)')` 命中则 `durationMs=600`,否则 `4500`(精确值)。
-- [ ] 6.5 resize 监听接 `wheel.resize()`。
+- [x] 6.1 启动:`storage.load()` → 校验失败回退默认 → `wheel.setPrizes(state.prizes)` + 渲染编辑表单 + 渲染历史。
+- [x] 6.2 抽奖链路:点「开始」→ 禁用 start **与编辑面板** → `winner=pickWinner(prizes)` → `target=targetRotation(prizes, winner, wheel.getRotation())` → `await wheel.spin(target, dur, ease)`(wheel 落定后自管 `this.rotation`,无需 app 回写)→ 弹窗 + `state.history=appendHistory(state.history, {ts:Date.now(), prizeId:prizes[winner].id, prizeName:prizes[winner].name})` + `save(state)` → 解锁。
+- [x] 6.3 编辑变更处理:输入/增删/恢复默认 → 更新 `state.prizes` + `wheel.setPrizes` + `save(state)`。
+- [x] 6.4 `prefers-reduced-motion`:`matchMedia('(prefers-reduced-motion: reduce)')` 命中则 `durationMs=600`,否则 `4500`(精确值)。
+- [x] 6.5 resize 监听接 `wheel.resize()`。
   - 手动验证(6.1–6.5 合并):首次打开盘面+编辑+历史正确;完整抽奖链路(含禁用/解锁、连续多次不倒转);编辑即时重绘并持久化;刷新后状态恢复;改 `prefers-reduced-motion` 后动画变短;resize 不破坏。
 
 ## 7. 收尾验证
 
-- [ ] 7.1 手动 checklist 全过(转盘可见/指针固定不随盘转/中奖弹窗正确/编辑即时重绘/历史可清/resize 正常/存储异常不崩/连续抽奖恒前进)。
-- [ ] 7.2 `openspec validate add-lucky-wheel --strict` 通过(若 CLI 支持)。
+- [x] 7.1 手动 checklist 全过(转盘可见/指针固定不随盘转/中奖弹窗正确/编辑即时重绘/历史可清/resize 正常/存储异常不崩/连续抽奖恒前进)。
+- [x] 7.2 `openspec validate add-lucky-wheel --strict` 通过(若 CLI 支持)。

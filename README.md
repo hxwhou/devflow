@@ -10,7 +10,7 @@ devflow 把 openspec(spec-driven development)和 superpowers(过程 skill 集)�
 brainstorm → propose → review → apply → audit → archive
 ```
 
-每个阶段只调对应 skill,阶段间靠入口/出口 checklist 衔接。框架本身**只是一堆 markdown**(`AGENTS.md` 瘦桩 + `docs/devflow-rules.md` 真相源 + 6 个 slash 命令薄壳),零 bash 脚本、零安装工具。
+每个阶段只调对应 skill,阶段间靠入口/出口 checklist 衔接。框架本身**只是一堆 markdown**(`AGENTS.md` 瘦桩 + `devflow-rules.md` 真相源 + 6 个 slash 命令薄壳),零 bash 脚本、零安装工具。
 
 ## 为什么(相对 easyflow)
 
@@ -30,7 +30,7 @@ cd devflow
 opencode
 ```
 
-在 opencode 里跑 `/devflow:brainstorm` 开始,或直接说"建一个 X 功能"——agent 读 `AGENTS.md` + `docs/devflow-rules.md` 自动按 6 阶段走。
+在 opencode 里跑 `/devflow:brainstorm` 开始,或直接说"建一个 X 功能"——agent 读 `AGENTS.md` + `devflow-rules.md` 自动按 6 阶段走。
 
 ## 6 阶段 workflow
 
@@ -43,20 +43,20 @@ opencode
 | 5 audit | `/devflow:audit` | 项目 tooling + `requesting-code-review` | 问题归档或修 |
 | 6 archive | `/devflow:archive` | `verification-before-completion`→`finishing-a-development-branch`→`openspec-verify-change`→`openspec-archive-change` | 归档完成 |
 
-完整规则 + 每阶段入口/出口 checklist 见 [docs/devflow-rules.md](docs/devflow-rules.md)(通过 `opencode.json` 的 `instructions` 自动注入 context)。
+完整规则 + 每阶段入口/出口 checklist 见 [devflow-rules.md](devflow-rules.md)(通过 `opencode.json` 的 `instructions` 自动注入 context)。
 
 ## 项目结构
 
 ```
 devflow/
-  opencode.json                 # instructions: ["docs/devflow-rules.md"] — 自动加载规则
+  opencode.json                 # instructions: ["devflow-rules.md"] — 自动加载规则
   AGENTS.md                     # 瘦桩:指路 + /init 防护
+  devflow-rules.md              # 真相源:6 阶段 + 全局规则 + checklist(/init 不碰)
   LICENSE
   .opencode/commands/           # 6 个 /devflow:* 命令薄壳
   .opencode/skills/openspec-*/  # 8 个 vendored openspec skill
   openspec/config.yaml          # OpenSpec 配置
   docs/
-    devflow-rules.md            # 真相源:6 阶段 + 全局规则 + checklist(/init 不碰)
     devflow-design.md           # 设计文档(选型/思路/框架)
 ```
 
@@ -71,12 +71,12 @@ devflow/
 
 ## 防 /init
 
-opencode 的 `/init` 对已存在的 `AGENTS.md` 是"原地改进"(merge),会污染真相源。devflow 把框架真内容放 `docs/devflow-rules.md`,`AGENTS.md` 只留瘦桩——`/init` 只能改瘦桩,误改后 `git restore AGENTS.md` 即恢复。详见 [docs/devflow-design.md §3.8](docs/devflow-design.md)。
+opencode 的 `/init` 对已存在的 `AGENTS.md` 是"原地改进"(merge),会污染真相源。devflow 把框架真内容放 `devflow-rules.md`,`AGENTS.md` 只留瘦桩——`/init` 只能改瘦桩,误改后 `git restore AGENTS.md` 即恢复。详见 [docs/devflow-design.md §3.8](docs/devflow-design.md)。
 
 ## 文档
 
 - [docs/devflow-design.md](docs/devflow-design.md) — 完整设计(选型过程 / 实现思路 / 框架结构 / 相对 easyflow 的取舍)
-- [docs/devflow-rules.md](docs/devflow-rules.md) — 运行时规则(6 阶段总览 + 全局规则 + 每阶段 checklist)
+- [devflow-rules.md](devflow-rules.md) — 运行时规则(6 阶段总览 + 全局规则 + 每阶段 checklist)
 
 ## License
 

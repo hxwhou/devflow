@@ -6,6 +6,8 @@ description: devflow 阶段 3 — 工程评审、找漏洞、锁定计划
 
 本阶段:以对抗式视角评审 proposal+tasks,找漏洞、修订、锁定。
 
+> **fast-track 跳过本阶段**——自检(五问)并进 apply;仅 full 走本阶段。
+
 ## 调用 skill
 1. `skill("writing-plans")` — refine tasks(若 tasks 不够细)
 2. 自检 checklist(五问):架构 / 数据流 / 边界情况 / 测试覆盖 / 性能
@@ -23,4 +25,4 @@ description: devflow 阶段 3 — 工程评审、找漏洞、锁定计划
 ## 下一阶段
 完成且出口满足 → `/devflow:apply`
 
-> 详细规则见 `docs/devflow-rules.md` §review。真相源在 docs/devflow-rules.md(opencode.json 自动加载)。
+> 详细规则见 `devflow-rules.md` §review。真相源在 devflow-rules.md(opencode.json 自动加载)。

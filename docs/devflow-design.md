@@ -67,7 +67,7 @@
 - **逻辑**:轻量可见性,替代 easyflow H8。纯约定,无 hook 强制。
 
 ### 3.8 防 /init 污染(AGENTS.md 瘦桩 + opencode.json instructions)
-- **决策**:框架真内容放 `docs/devflow-rules.md`;`AGENTS.md` 只留瘦桩;`opencode.json` 的 `instructions` 字段把 rules 文件自动注入 context(与 AGENTS.md 合并)。
+- **决策**:框架真内容放 `devflow-rules.md`;`AGENTS.md` 只留瘦桩;`opencode.json` 的 `instructions` 字段把 rules 文件自动注入 context(与 AGENTS.md 合并)。
 - **逻辑**:opencode `/init` 对已存在的 AGENTS.md 是"原地改进"(merge),不毁但会塞入其代码分析污染真相源。rules 文件不在 AGENTS.md 路径,/init 不碰;瘦桩任其改,`git restore AGENTS.md` 即恢复。用 opencode 官方推荐的 `instructions` 机制(见 opencode docs Rules 页)保留 always-on context。
 - **对比 easyflow**:easyflow 的 AGENTS.md 是自写分析仓的、不暴露给 /init;devflow 作为可分发模板必须考虑用户跑 /init 的场景。
 
@@ -76,7 +76,7 @@
 ### 4.1 文件布局
 ```
 D:\09-opencode\devflow\
-  opencode.json                      # instructions: ["docs/devflow-rules.md"] — 自动加载规则到 context
+  opencode.json                      # instructions: ["devflow-rules.md"] — 自动加载规则到 context
   AGENTS.md                          # 瘦桩:指路 + /init 防护(/init 只改此桩)
   .opencode/commands/
     devflow-brainstorm.md            # /devflow:brainstorm
@@ -88,7 +88,7 @@ D:\09-opencode\devflow\
   .opencode/skills/openspec-*/       # 8 个 openspec skill(vendored)
   openspec/config.yaml               # OpenSpec 配置
   .gitignore
-  docs/devflow-rules.md              # 真相源:6 阶段 + 全局规则 + checklist(/init 不碰)
+  devflow-rules.md              # 真相源:6 阶段 + 全局规则 + checklist(/init 不碰)
   docs/devflow-design.md             # 本设计文档
 ```
 - superpowers:全局 opencode 插件,**不 vendor**(引用即可)
@@ -118,9 +118,9 @@ D:\09-opencode\devflow\
 
 **不 vendor(4 个)**:openspec-ff-change / openspec-bulk-archive-change / openspec-onboard / openspec-update-change
 
-### 4.4 AGENTS.md(瘦桩)+ docs/devflow-rules.md(真相源)
+### 4.4 AGENTS.md(瘦桩)+ devflow-rules.md(真相源)
 - **AGENTS.md 瘦桩**:一句话定位 + 指路(`/devflow:brainstorm` 开始)+ rules 已自动加载的说明 + /init 防护提醒
-- **docs/devflow-rules.md 真相源**(opencode.json `instructions` 自动加载):
+- **devflow-rules.md 真相源**(opencode.json `instructions` 自动加载):
   - 定位(一句话)
   - 前置依赖(opencode+superpowers 全局;openspec CLI;openspec skills 已 vendor)
   - 6 阶段总览表
@@ -128,7 +128,7 @@ D:\09-opencode\devflow\
   - 每阶段入口/出口 checklist(prose)
   - 取舍说明(砍 easyflow 什么、保留什么)
   - 命令清单
-- **opencode.json**:`{ "$schema": "...", "instructions": ["docs/devflow-rules.md"] }`
+- **opencode.json**:`{ "$schema": "...", "instructions": ["devflow-rules.md"] }`
 
 ### 4.5 命令薄壳模板
 ```
@@ -142,7 +142,7 @@ description: "<阶段一句话>"
 ## 出口 checklist
 ## 下一阶段 → /devflow:<next>
 ```
-真相源在 docs/devflow-rules.md(opencode.json 自动加载),命令只按需注入该阶段指南。
+真相源在 devflow-rules.md(opencode.json 自动加载),命令只按需注入该阶段指南。
 
 ## 5. 相对 easyflow 的取舍
 
@@ -157,6 +157,9 @@ description: "<阶段一句话>"
 | install tooling | 纯模板,git clone 即用 |
 | .harness 运行时态 | checkpoint 进 openspec change 目录 |
 | tasks-lint.sh | TDD 改 prose 约定 |
+| per-task TDD(fast-track) | fast-track 改模块级 TDD(一模块全测→RED→实现→GREEN),省 ~70 工具往返 |
+| subagent 评审(fast-track) | fast-track 禁用 cross-review / code-review subagent,主代理自检即可 |
+| 回写上游文档 | 改 point-in-time:修正只动 tasks.md + spec delta,不回写 pre-design/proposal/design |
 
 ### 保留(及为何)
 | 保留 | 为何 |
@@ -167,6 +170,8 @@ description: "<阶段一句话>"
 | change_id 统一键 | 三系统衔接 |
 | worktree 隔离 | 用 superpowers 原生,不自制脚本 |
 | TDD 纪律 | prose 约定,去掉机械 lint |
+| 代理自判分级(fast-track / full) | 入口读请求即判 route,小改动一条龙串接省时 |
+| 一条龙串接(fast-track) | fast-track 同会话串 propose→apply→archive,中途不停 |
 
 ## 6. 前置依赖
 - opencode + superpowers 插件(全局,marketplace 装)
@@ -178,7 +183,7 @@ description: "<阶段一句话>"
 2. 写 `.gitignore`(`.harness/`、`node_modules/`、`*.log`、`.DS_Store`、`Thumbs.db`、`*.tmp`)
 3. Vendor 8 个 openspec skill(从 `easyflow-demo/.opencode/skills/openspec-*/` 拷净,已验零 easyflow 耦合)
 4. 写 `openspec/config.yaml`(最小配置)
-5. 写 `AGENTS.md`(瘦桩)+ `opencode.json`(instructions)+ `docs/devflow-rules.md`(真相源)
+5. 写 `AGENTS.md`(瘦桩)+ `opencode.json`(instructions)+ `devflow-rules.md`(真相源)
 6. 写 6 个命令薄壳 `.opencode/commands/devflow-*.md`
 7. `git add -A` + commit `feat: devflow framework — pure-doc orchestration of openspec + superpowers`
 8. 验证:tree 列表;抽检 AGENTS.md + 一个命令 frontmatter;(可选)小变更试跑 `/devflow:brainstorm`

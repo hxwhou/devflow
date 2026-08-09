@@ -6,6 +6,11 @@ description: devflow 阶段 2 — 生成 OpenSpec 四件套(proposal/design/spec
 
 本阶段:把设计意图变成可实施的 openspec change,产出四件套 + tasks。
 
+## 规模判定
+- **fast-track**:design.md 走 openspec 条件跳过(仅 proposal + specs + tasks)
+- 写完 tasks.md **复判**:按实际 task 数,超阈值则 `[devflow] 升级 full` 跳出串接,补 review/audit
+- **full**:四件套全出
+
 ## 调用 skill
 1. `skill("openspec-propose")` — 核心:一步出 proposal+design+specs+tasks
 2. 或 `skill("openspec-new-change")` + `skill("openspec-continue-change")` — 逐步(备选)
@@ -22,4 +27,4 @@ description: devflow 阶段 2 — 生成 OpenSpec 四件套(proposal/design/spec
 ## 下一阶段
 完成且出口满足 → `/devflow:review`
 
-> 详细规则见 `docs/devflow-rules.md` §propose。真相源在 docs/devflow-rules.md(opencode.json 自动加载)。
+> 详细规则见 `devflow-rules.md` §propose。真相源在 devflow-rules.md(opencode.json 自动加载)。

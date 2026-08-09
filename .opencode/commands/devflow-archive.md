@@ -6,6 +6,10 @@ description: devflow 阶段 6 — 终验 + 合回 + worktree 清理 + OpenSpec �
 
 本阶段:终验、合回主仓、清理 worktree、归档 openspec change。
 
+## 规模判定
+- **fast-track**:`verification-before-completion` → `finishing-a-development-branch`(inline 无 worktree 时只做合回)→ `openspec-archive-change`;**跳 `openspec-verify-change`**(audit 已跳,verify 冗余)
+- **full**:全 4 skill 串联
+
 ## 调用 skill
 1. `skill("verification-before-completion")` — 终验证据
 2. `skill("finishing-a-development-branch")` — ff-merge/rebase 合回 + worktree 清理(纯 git,不自制脚本)
@@ -25,4 +29,4 @@ description: devflow 阶段 6 — 终验 + 合回 + worktree 清理 + OpenSpec �
 ## 下一阶段
 (完结)
 
-> 详细规则见 `docs/devflow-rules.md` §archive。真相源在 docs/devflow-rules.md(opencode.json 自动加载)。
+> 详细规则见 `devflow-rules.md` §archive。真相源在 devflow-rules.md(opencode.json 自动加载)。

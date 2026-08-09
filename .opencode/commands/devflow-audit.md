@@ -6,6 +6,8 @@ description: devflow 阶段 5 — 代码质量 + 测试覆盖 + 评审审计
 
 本阶段:审计实施产出,确认质量达标。
 
+> **fast-track 跳过本阶段**——测试绿即可;自检并进 archive 的 verification;仅 full 走本阶段。
+
 ## 调用 skill
 1. 跑项目自带 tooling:`npm test` / lint / coverage(非 skill,是项目自身工具)
 2. `skill("requesting-code-review")` — code review
@@ -23,4 +25,4 @@ description: devflow 阶段 5 — 代码质量 + 测试覆盖 + 评审审计
 ## 下一阶段
 完成且出口满足 → `/devflow:archive`
 
-> 详细规则见 `docs/devflow-rules.md` §audit。真相源在 docs/devflow-rules.md(opencode.json 自动加载)。
+> 详细规则见 `devflow-rules.md` §audit。真相源在 devflow-rules.md(opencode.json 自动加载)。

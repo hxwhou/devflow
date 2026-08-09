@@ -58,7 +58,7 @@ localStorage key `devflow-wheel:v1`,值为 `{ version, prizes, history }` 整体
 
 ### D8. 共享纯函数 `computeSegments(prizes)`(消除"视觉=逻辑"接缝漂移)
 
-`prize-engine.js` 导出 `computeSegments(prizes) → [{ start, end, center, arc }]`,约定:从 `0°`(canvas +X 轴)起、**顺时针**累加、`arc_i = weight_i / total · 2π`、`center_i = start_i + arc_i/2`、`Σarc = 2π`。`wheel.draw` 与 `targetRotation` **均消费**此函数。理由:`draw`(视觉)与 `targetRotation`(逻辑)共用同一套起点/方向约定,从根上保证指针对齐的是逻辑选中的扇形;且 `arc ∝ weight` 与「Pointer lands inside winner segment」落到**可单测**的纯函数接缝,而非依赖未测的 canvas 代码。
+`prize-engine.js` 导出 `computeSegments(prizes) → [{ start, end, center, arc }]`,约定:**角度单位为度**(与 `targetRotation`、pointer 270°、mod 360 一致);从 `0°`(canvas +X 轴)起、**顺时针**累加、`arc_i = weight_i / total · 360`、`center_i = start_i + arc_i/2`、`Σarc = 360`。`wheel.draw` 与 `targetRotation` **均消费**此函数(`draw` 内部喂 `ctx.arc` 时把度转弧度)。理由:`draw`(视觉)与 `targetRotation`(逻辑)共用同一套起点/方向/单位约定,从根上保证指针对齐的是逻辑选中的扇形;且 `arc ∝ weight` 与「Pointer lands inside winner segment」落到**可单测**的纯函数接缝,而非依赖未测的 canvas 代码。
 **备选**:在 `draw` 与 `targetRotation` 各自内联算扇形——约定漂移风险高、重复代码、不可单测,拒绝。
 
 ### D9. `normalizeWeight` + 调色板(新增奖品缺省色)

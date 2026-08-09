@@ -1,7 +1,7 @@
 # Tasks — add-lucky-wheel
 
 > 纯逻辑任务用 devflow TDD 子步 `N.M.1~5`(写测试/跑红/实现/跑绿/重构)+ RED/GREEN 证据;canvas/DOM 视觉任务用「手动验证」子步(零构建下不单测视觉)。勾选 `N.M` 即该任务完成。
-> 接口约定(跨任务共享,改前必读):`storage.VERSION=1`;`load()→{version,prizes,history}`;`save(state)` 接收完整 state;`prize-engine` 导出 `computeSegments(prizes)→[{start,end,center,arc}]`(0° 起、顺时针、`arc_i=weight_i/total·2π`、`center_i=start_i+arc_i/2`)、`pickWinner(prizes)→index`、`targetRotation(prizes,winnerIndex,currentRotation)→度`(ε=3°)、`normalizeWeight(x)→≥1`、`DEFAULT_PALETTE[]`;`Wheel` 为有状态类(`new Wheel(canvas)`,持 `rotation`/`prizes`,方法 `setPrizes/getRotation/draw/spin/resize`)。指针为 `index.html` 静态 markup(12 点钟)。
+> 接口约定(跨任务共享,改前必读):`storage.VERSION=1`;`load()→{version,prizes,history}`;`save(state)` 接收完整 state;`prize-engine` 导出 `computeSegments(prizes)→[{start,end,center,arc}]`(度;0° 起、顺时针、`arc_i=weight_i/total·360`、`center_i=start_i+arc_i/2`、Σarc=360)、`pickWinner(prizes)→index`、`targetRotation(prizes,winnerIndex,currentRotation)→度`(ε=3°)、`normalizeWeight(x)→≥1`、`DEFAULT_PALETTE[]`;`Wheel` 为有状态类(`new Wheel(canvas)`,持 `rotation`/`prizes`,方法 `setPrizes/getRotation/draw/spin/resize`)。指针为 `index.html` 静态 markup(12 点钟)。
 
 ## 1. 脚手架
 
@@ -41,25 +41,25 @@
 
 ## 3. 奖品引擎(js/prize-engine.js)— 纯逻辑, TDD
 
-- [ ] 3.1 `computeSegments(prizes)`:共享扇形几何
-  - 3.1.1 写测试:返回 `[{start,end,center,arc}]`,长度 = prizes 长度;`start_0 === 0`;`Σarc === 2π`(容差 1e-9);`arc_i ≈ weight_i/total·2π`(容差 1e-9);`start_{i+1} === end_i`(连续);`center_i === start_i + arc_i/2`;单奖品 `arc === 2π`、`start===0`、`end===2π`。
+- [x] 3.1 `computeSegments(prizes)`:共享扇形几何(度)
+  - 3.1.1 写测试:返回 `[{start,end,center,arc}]`,长度 = prizes 长度;`start_0 === 0`;`Σarc === 360`(容差 1e-9);`arc_i ≈ weight_i/total·360`(容差 1e-9);`start_{i+1} === end_i`(连续);`center_i === start_i + arc_i/2`;单奖品 `arc === 360`、`start===0`、`end===360`。
   - 3.1.2 跑测试 → RED。
   - 3.1.3 实现 `computeSegments(prizes)`(0° 起、顺时针累加)。
   - 3.1.4 跑测试 → GREEN。
   - 3.1.5 重构。
-- [ ] 3.2 `pickWinner(prizes)`:加权随机
+- [x] 3.2 `pickWinner(prizes)`:加权随机
   - 3.2.1 写测试:单奖品恒返回 0;固定权重数组跑 10000 次,各奖品频率 ≈ `weight_i/total` 容差 ±2pp;返回索引恒在 `[0, len)`;空数组抛错。
   - 3.2.2 跑测试 → RED。
   - 3.2.3 实现 `pickWinner`(累加权重 + `Math.random` 落区间)。
   - 3.2.4 跑测试 → GREEN。
   - 3.2.5 重构。
-- [ ] 3.3 `targetRotation(prizes, winnerIndex, currentRotation)`:指针对齐中奖扇形
+- [x] 3.3 `targetRotation(prizes, winnerIndex, currentRotation)`:指针对齐中奖扇形
   - 3.3.1 写测试:返回值 > currentRotation;`(返回值 mod 360)` 使指针(270°)落进 `winnerIndex` 扇形弧 `[start+ε, end-ε)` 内(ε=3°);额外整圈数 ≥ 5;`delta` ∈ `[−(arc/2−ε), +(arc/2−ε)]` 且为均匀随机(arc ≤ 2ε 时 delta=0);用 `computeSegments` 取几何(断言 targetRotation 调用了它,或等价地用 `computeSegments` 算期望区间验证)。
   - 3.3.2 跑测试 → RED。
-  - 3.3.3 实现 `targetRotation`(`seg=computeSegments(prizes)[winnerIndex]`;`delta = arc>2ε ? uniform(-arc/2+ε, arc/2-ε) : 0`;`base=(270 − (seg.center + delta)) mod 360`;`k=max(5, ceil((current−base)/360)+1)`;`return base+360*k`,度单位)。
+  - 3.3.3 实现 `targetRotation`(`seg=computeSegments(prizes)[winnerIndex]`;`delta = arc>2ε ? (Math.random()*2-1)*(arc/2-ε) : 0`(均匀随机,ε=3°);`base=((270 − (seg.center + delta)) mod 360 +360) mod 360`;`k=5 + ceil((current−base)/360)`(**修正**:保证每次抽奖 `result−current ≥ 5·360`,原 `k=max(5,ceil(...)+1)` 只保证 `result>current` 不满足"≥5 整圈前进");`return base+360*k`,度单位)。
   - 3.3.4 跑测试 → GREEN。
   - 3.3.5 重构。
-- [ ] 3.4 `normalizeWeight` + `DEFAULT_PALETTE`
+- [x] 3.4 `normalizeWeight` + `DEFAULT_PALETTE`
   - 3.4.1 写测试:`normalizeWeight(5)===5`;`normalizeWeight(0)===1`;`normalizeWeight(-3)===1`;`normalizeWeight(NaN)===1`;`normalizeWeight(2.7)===3`(round);`DEFAULT_PALETTE` 至少 6 色且全为合法十六进制。
   - 3.4.2 跑测试 → RED。
   - 3.4.3 实现 `normalizeWeight(x)=max(1, round(Number(x)||0))` 与 `DEFAULT_PALETTE`。

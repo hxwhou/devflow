@@ -109,9 +109,9 @@ Canvas 角度约定:0=右(3 点)、顺时针递增、90=下、**270=上(指针�
   2. 在扇形内部取随机抖动 `delta ∈ [-(arc/2 - ε), +(arc/2 - ε)]`(指针明显落在扇内、不压分隔线);`ε = 3°` 边距(若扇形弧 ≤ 2ε 则 `delta = 0`)。
   3. 令 `rotation ≡ 270 - (center_i + delta) (mod 360)` 使之对齐指针。
   4. 在 `currentRotation` 基础上**加 ≥5 整圈**前进,返回大于当前的绝对目标角(度)。
-     - `base = (270 - center_i - delta) mod 360`
-     - `k = max(5, ceil((current - base) / 360) + 1)`
-     - `return base + 360 * k`
+     - `base = (270 - center_i - delta) mod 360`(归一化到 `[0,360)`)
+     - `k = 5 + ceil((current - base) / 360)`(修正:保证每抽 `result - current ≥ 5·360`,即恒前进 ≥5 整圈;原 `k = max(5, ceil((current - base)/360) + 1)` 仅保证 `result > current`,不满足"加 ≥5 整圈前进",已弃用)
+     - `return base + 360 * k`(`result mod 360 = base`,指针落点正确)
 
 ### 4.3 动画(`wheel.js` 的 `spin(target, durationMs, easing) → Promise`)
 

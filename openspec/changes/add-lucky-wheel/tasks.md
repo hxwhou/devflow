@@ -14,25 +14,25 @@
 
 ## 2. 存储层(js/storage.js)— 纯逻辑, TDD
 
-- [ ] 2.1 `VERSION` 常量 + 默认奖品集 + `validate`
+- [x] 2.1 `VERSION` 常量 + 默认奖品集 + `validate`
   - 2.1.1 写测试:`VERSION === 1`;`DEFAULT_PRIZES` 至少 6 项,每项 `weight>0`、`name` 非空、`color` 为十六进制;`validate(state)` 对 `version===VERSION` 且 prizes 合法返回 true;对 `version` 不符 / 空数组 / 含 `weight≤0` / 空名 / 非数返回 false;prizes 合法但 history 非数组返回 false(仅 history 校验位)。
   - 2.1.2 跑测试 → RED。
   - 2.1.3 实现 `VERSION`、`DEFAULT_PRIZES`、`validate(state)`(校验 version===VERSION、prizes 数组合法、history 为数组)。
   - 2.1.4 跑测试 → GREEN。
   - 2.1.5 重构(纯函数、无副作用)。
-- [ ] 2.2 `load()`:解析 + 校验 + 回退(含 history 局部重置)
+- [x] 2.2 `load()`:解析 + 校验 + 回退(含 history 局部重置)
   - 2.2.1 写测试:无 key → 返回 `{version:VERSION, prizes:DEFAULT_PRIZES, history:[]}`;损坏 JSON → 同样回退默认全量;`version` 不符 → 回退默认全量;prizes 合法但 history 损坏(非数组)→ 返回 `{version:VERSION, prizes:<原>, history:[]}`(只重置 history,不丢 prizes)。
   - 2.2.2 跑测试 → RED。
   - 2.2.3 实现 `load()`(读 `devflow-wheel:v1`、`JSON.parse` 包 try、`validate` 失败 `console.warn` 并回退全量默认;history 局部损坏时保留 prizes 重置 history)。
   - 2.2.4 跑测试 → GREEN。
   - 2.2.5 重构。
-- [ ] 2.3 `save(state)`:原子整存 + 写失败安全
+- [x] 2.3 `save(state)`:原子整存 + 写失败安全
   - 2.3.1 写测试:`save({version,prizes,history})` 后 `load()` 往返字段全等(含 `version`);stub `Storage.prototype.setItem`(sandbox + restore,避免污染真实 key)令其抛异常时 `save()` 不抛(吞掉并 `console.warn`)。
   - 2.3.2 跑测试 → RED。
   - 2.3.3 实现 `save(state)`(整对象 `JSON.stringify` 一次 `setItem`,try/catch)。
   - 2.3.4 跑测试 → GREEN。
   - 2.3.5 重构。
-- [ ] 2.4 历史条目形状 + 上限(50)+ 清空
+- [x] 2.4 历史条目形状 + 上限(50)+ 清空
   - 2.4.1 写测试:条目形状为 `{ts:number, prizeId:string|null, prizeName:string}`;`appendHistory(history, entry)` 在 50 条时再追加 → 长度仍 50 且最旧被踢;追加后该条目对 prizes 的后续改名/删除**免疫**(因为存的是 `prizeName` 字符串快照,断言改名后历史条目仍显旧名);`clearHistory()` 返回 `[]`。
   - 2.4.2 跑测试 → RED。
   - 2.4.3 实现 `appendHistory` / `clearHistory`(appendHistory 不可变返回新数组)。

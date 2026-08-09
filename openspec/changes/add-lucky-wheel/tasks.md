@@ -68,16 +68,16 @@
 
 ## 4. 转盘渲染与动画(js/wheel.js)— `Wheel` 有状态类;视觉手动验证 + 纯 ease 单测
 
-- [ ] 4.1 `Wheel` 类:`constructor` / `setPrizes` / `draw` / `getRotation`
+- [x] 4.1 `Wheel` 类:`constructor` / `setPrizes` / `draw` / `getRotation`
   - `constructor(canvas)`:初始化 ctx、dpr 缩放、`this.rotation=0`、`this.prizes=[]`。`setPrizes(p)` 存并 `draw()`。`draw()`:清空;按 dpr 设像素尺寸;平移圆心 + `rotate(this.rotation·π/180)`;用 `computeSegments(prizes)` 取扇形,逐个 `arc` 填 `prize.color`、白色分隔线;奖品名沿径向旋转放 `0.7R`,**白色 `fillText` + 细 `strokeText` 描边**保证任意底色可读,长名截断 `…`。`getRotation()` 返回 `this.rotation`。
   - 手动验证:8 默认奖品扇形大小 ∝ 权重、色交替、分隔线可见、文字白底描边可读不溢出、指针(静态 div)在顶部不随盘转。
-- [ ] 4.2 `Wheel.spin(target, durationMs, easing) → Promise` + 纯 `easeOutQuart`
+- [x] 4.2 `Wheel.spin(target, durationMs, easing) → Promise` + 纯 `easeOutQuart`
   - 4.2.1 写测试(纯,不实例化 Wheel):`easeOutQuart(0)===0`;`easeOutQuart(1)===1`;`easeOutQuart(0.5)===1−0.5^4=0.9375`;`easeOutQuart` 在 [0,1] 单调不减(采样 21 点);`t≥1→1`、`t<0→0`。
   - 4.2.2 跑测试 → RED。
   - 4.2.3 实现:导出纯函数 `easeOutQuart(t)=1−(1−t)^4`(夹紧 t 到 [0,1]);`spin` 用 rAF:`start=now`;每帧 `t=clamp((now−start)/duration,0,1)`、`eased=easeOutQuart(t)`、`angle=this.rotation+(target−this.rotation)*eased`、`draw()`;`t≥1` 时 `this.rotation=target`、`draw()`、resolve。
   - 4.2.4 跑测试 → GREEN(纯函数);手动验证:点击后顺向旋转、减速、停在目标;落定指针明显在中奖扇形内(非分隔线上);连续多次抽奖盘恒前进不倒转。
   - 4.2.5 重构。
-- [ ] 4.3 `Wheel.resize()`
+- [x] 4.3 `Wheel.resize()`
   - `resize()`:按当前显示尺寸 + dpr 重设 canvas 像素尺寸,调 `draw()`(用 `this.rotation`,角度连续)。
   - 手动验证:拖拽窗口转盘不模糊、不偏移、角度不跳变。
 

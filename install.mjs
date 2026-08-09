@@ -1,11 +1,17 @@
 #!/usr/bin/env node
 // devflow installer — cross-platform, zero deps, Node >=20.19 (already a prereq).
 // Usage:  node install.mjs <target-dir>   (default: .)
+//
+// Skills are NOT vendored in this repo — fetched at install time:
+//   - openspec skills: `openspec init --tools opencode` (canonical CLI, always current)
+//   - superpowers skills: copied from the global superpowers install
 
-import { readFile, writeFile, mkdir, readdir, copyFile, stat } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir, copyFile, stat, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+import { homedir } from 'node:os';
 
 const SOURCE = dirname(fileURLToPath(import.meta.url));
 const TARGET = resolve(process.argv[2] || process.cwd());
@@ -13,28 +19,35 @@ const TARGET = resolve(process.argv[2] || process.cwd());
 const START = '<!-- devflow:start -->';
 const END = '<!-- devflow:end -->';
 
-const CONFIG_YAML = `schema: spec-driven
+// devflow workflow uses these 11 superpowers skills (core 7 + conditional 4).
+// NOT copied: using-superpowers (bootstrap, harness auto-loads from global),
+// writing-skills (meta), subagent-driven-development (alternative to executing-plans).
+const SUPERPOWERS_SKILLS = [
+  'brainstorming',
+  'writing-plans',
+  'using-git-worktrees',
+  'test-driven-development',
+  'requesting-code-review',
+  'verification-before-completion',
+  'finishing-a-development-branch',
+  'dispatching-parallel-agents',
+  'executing-plans',
+  'systematic-debugging',
+  'receiving-code-review',
+];
 
-# Project context (optional) — add your tech stack / conventions / domain
-# context: |
-#   Tech stack: ...
-#   Domain: ...
+// openspec skills that `openspec init` does NOT generate by default but devflow references.
+// Vendored in this repo (canonical 1.8.0 content); copied to supplement init's 6.
+const OPENSPEC_SUPPLEMENT_SKILLS = [
+  'openspec-verify-change',
+  'openspec-new-change',
+  'openspec-continue-change',
+];
 
-# Per-artifact rules (optional)
-# devflow convention: tasks use TDD sub-steps N.M.1~5 (write test / red / impl / green / refactor)
-# rules:
-#   tasks:
-#     - Break each task into TDD sub-steps (N.M.1 write test / N.M.2 red / N.M.3 impl / N.M.4 green / N.M.5 refactor)
-
-# Per-operation guidance (optional)
-# operations:
-#   apply:
-#     guidance:
-#       - Keep test summaries concise
-#   archive:
-#     guidance:
-#       - Summarize the archive outcome before finishing
-`;
+function superpowersDir() {
+  const root = process.env.XDG_CONFIG_HOME || join(homedir(), '.config');
+  return join(root, 'opencode', 'node_modules', 'superpowers', 'skills');
+}
 
 async function copyDir(src, dst) {
   await mkdir(dst, { recursive: true });
@@ -42,6 +55,54 @@ async function copyDir(src, dst) {
     if (e.isDirectory()) await copyDir(join(src, e.name), join(dst, e.name));
     else await copyFile(join(src, e.name), join(dst, e.name));
   }
+}
+
+function runOpenspecInit() {
+  const cmd = `openspec init --tools opencode --force --no-animation "${TARGET}"`;
+  const r = spawnSync(cmd, { stdio: 'inherit', shell: true });
+  if (r.error && r.error.code === 'ENOENT') {
+    throw new Error(`openspec CLI not found on PATH. Install @fission-ai/openspec or @studyzy/openspec-cn first.`);
+  }
+  if (r.status !== 0) {
+    throw new Error(`openspec init failed (exit ${r.status}). Ensure openspec CLI is installed and try 'openspec init' manually in the target.`);
+  }
+}
+
+async function cleanOpsxCommands() {
+  const dir = join(TARGET, '.opencode', 'commands');
+  if (!existsSync(dir)) return 0;
+  const files = (await readdir(dir)).filter(n => n.startsWith('opsx-') && n.endsWith('.md'));
+  for (const n of files) await rm(join(dir, n), { force: true });
+  return files.length;
+}
+
+async function copyOpenspecSupplementSkills() {
+  const srcBase = join(SOURCE, '.opencode', 'skills');
+  const dst = join(TARGET, '.opencode', 'skills');
+  let copied = 0;
+  for (const name of OPENSPEC_SUPPLEMENT_SKILLS) {
+    const src = join(srcBase, name);
+    if (!existsSync(src)) { console.warn(`  ! vendored openspec skill missing in source: ${name}`); continue; }
+    await copyDir(src, join(dst, name));
+    copied++;
+  }
+  return copied;
+}
+
+async function copySuperpowersSkills() {
+  const spDir = superpowersDir();
+  if (!existsSync(spDir)) {
+    throw new Error(`superpowers skills dir not found: ${spDir}\nInstall superpowers globally first (opencode marketplace), then re-run.`);
+  }
+  const dst = join(TARGET, '.opencode', 'skills');
+  let copied = 0;
+  for (const name of SUPERPOWERS_SKILLS) {
+    const src = join(spDir, name);
+    if (!existsSync(src)) { console.warn(`  ! superpowers skill missing in global install, skipped: ${name}`); continue; }
+    await copyDir(src, join(dst, name));
+    copied++;
+  }
+  return copied;
 }
 
 async function mergeOpencodeJson() {
@@ -76,42 +137,34 @@ async function mergeAgents() {
   return existing ? 'appended' : 'created';
 }
 
-async function writeIfAbsent(dst, content) {
-  if (existsSync(dst)) return 'exists, skipped';
-  await mkdir(dirname(dst), { recursive: true });
-  await writeFile(dst, content, 'utf8');
-  return 'created';
-}
-
 async function main() {
   if (!existsSync(TARGET)) throw new Error(`target dir not found: ${TARGET}`);
   if (!(await stat(TARGET)).isDirectory()) throw new Error(`target is not a dir: ${TARGET}`);
 
-  await copyFile(join(SOURCE, 'devflow-rules.md'), join(TARGET, 'devflow-rules.md'));
+  runOpenspecInit();
+  const removedOpsx = await cleanOpsxCommands();
+  const oss = await copyOpenspecSupplementSkills();
+  const sp = await copySuperpowersSkills();
 
-  const cmdSrc = join(SOURCE, '.opencode', 'commands');
+  await copyFile(join(SOURCE, 'devflow-rules.md'), join(TARGET, 'devflow-rules.md'));
+  const cmdSrc = join(SOURCE, 'src', 'commands');
   const cmdDst = join(TARGET, '.opencode', 'commands');
   const cmds = (await readdir(cmdSrc)).filter(n => n.startsWith('devflow-') && n.endsWith('.md'));
   await mkdir(cmdDst, { recursive: true });
   for (const n of cmds) await copyFile(join(cmdSrc, n), join(cmdDst, n));
 
-  const sklSrc = join(SOURCE, '.opencode', 'skills');
-  const sklDst = join(TARGET, '.opencode', 'skills');
-  const skls = (await readdir(sklSrc, { withFileTypes: true }))
-    .filter(e => e.isDirectory() && e.name.startsWith('openspec-')).map(e => e.name);
-  for (const n of skls) await copyDir(join(sklSrc, n), join(sklDst, n));
-
   const oc = await mergeOpencodeJson();
   const ag = await mergeAgents();
-  const cfg = await writeIfAbsent(join(TARGET, 'openspec', 'config.yaml'), CONFIG_YAML);
 
   console.log(`devflow installed into ${TARGET}`);
+  console.log(`  - openspec skills + config via 'openspec init'`);
+  console.log(`  - ${oss} supplemental openspec skills (verify/new/continue-change, init skips these) -> .opencode/skills/`);
+  console.log(`  - removed ${removedOpsx} openspec /opsx:* commands (devflow uses /devflow:*)`);
+  console.log(`  - ${sp} superpowers skills -> .opencode/skills/`);
   console.log(`  - devflow-rules.md (root)`);
   console.log(`  - ${cmds.length} commands -> .opencode/commands/`);
-  console.log(`  - ${skls.length} skills   -> .opencode/skills/`);
   console.log(`  - opencode.json: ${oc}`);
   console.log(`  - AGENTS.md: ${ag}`);
-  console.log(`  - openspec/config.yaml: ${cfg}`);
   console.log(`\nnext: cd ${TARGET} && opencode  ->  /devflow:brainstorm`);
 }
 

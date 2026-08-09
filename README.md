@@ -14,21 +14,26 @@ brainstorm → propose → review → apply → audit → archive
 
 ## 前置依赖
 
-- **opencode** + **superpowers 插件**(全局,marketplace 装)
+- **opencode** + **superpowers 插件**(全局,opencode marketplace 装)——install 时作 superpowers skills 复制源
 - **openspec CLI**(`@fission-ai/openspec` 或 `@studyzy/openspec-cn`,Node ≥20.19)
-- openspec skills 已 vendor,`install.mjs` 自动复制进你的项目(`.opencode/skills/openspec-*/`)
+
+> openspec skills 由 `openspec init` 现取(canonical、最新);superpowers skills 从全局安装复制 11 个。devflow 仓库只 vendor 3 个 init 不生成的 openspec 补 skill(verify/new/continue-change),其余不预置。
 
 ## 怎么用
 
 devflow 装进**你自己的项目**里用(不是把你的项目塞进 devflow)。
 
 ```bash
-# 一次性:把 devflow 拉到本地当安装源(任意位置,只拉一次)
-git clone https://github.com/hxwhou/devflow.git ~/devflow
-
-# 装进你的项目
+# 进入你的项目
 cd /path/to/your-project
-node ~/devflow/install.mjs .
+
+# 一次性:把 devflow 拉到本地当安装源(任意位置,只拉一次)
+git clone https://github.com/hxwhou/devflow.git
+
+node ./devflow/install.mjs .
+
+# 装完删掉安装源(一次性;Windows PowerShell 用 Remove-Item -Recurse -Force devflow)
+rm -rf devflow
 
 # 启动
 opencode
@@ -36,13 +41,13 @@ opencode
 
 在 opencode 里跑 `/devflow:brainstorm`,或直接说"建一个 X 功能"——agent 读 `AGENTS.md` + `devflow-rules.md` 自动按流程走。
 
-**`install.mjs` 干了什么**:复制 `devflow-rules.md` + 6 命令薄壳 + 8 个 openspec skill;合并 `opencode.json`(加 `instructions: ["devflow-rules.md"]`)和 `AGENTS.md`(注入标记块,**不碰你已有的内容**);`openspec/config.yaml` 仅当不存在才落。幂等,可重跑。零依赖,跨平台(Node ≥20.19 本就是 openspec CLI 前置)。
+**`install.mjs` 干了什么**:跑 `openspec init` 现取 openspec skills + `openspec/config.yaml`,删 openspec 的 `/opsx-*` 命令(devflow 用 `/devflow:*`);补拷 3 个 init 不生成的 openspec skill(verify/new/continue-change,devflow 仓库 vendor);从全局 superpowers 复制 11 个 workflow skill;复制 `devflow-rules.md` + 6 命令薄壳;合并 `opencode.json`(加 `instructions: ["devflow-rules.md"]`)和 `AGENTS.md`(注入标记块,**不碰你已有的内容**)。幂等,可重跑。零依赖,跨平台(Node ≥20.19 本就是 openspec CLI 前置)。
 
 **代理自判 route**:agent 读完你的请求即判走哪条,打 `[devflow] 判定 ...`,你可一句话覆盖。
 - **fast-track**(小改动:单文件 / ≤5 task / 无跨切面):一条龙串接 propose→apply→archive,跳 review/audit,pre-design 留对话不落盘
 - **full**(大改动:跨模块 / auth / 迁移):逐阶段 6 步,每阶段出口停下等你
 
-> 也可直接 `git clone` 本仓库当一个新项目的起点(此时无需安装脚本)。
+> 也可直接 `git clone` 本仓库当一个新项目起点,然后跑 `node install.mjs .` 取 skill。
 
 ## 6 阶段
 
@@ -65,13 +70,13 @@ devflow/
   opencode.json                 # instructions: ["devflow-rules.md"] — 自动加载规则
   AGENTS.md                     # 瘦桩:指路
   devflow-rules.md              # 真相源:6 阶段 + 全局规则 + 规模判定
-  .opencode/commands/           # 6 个 /devflow:* 命令薄壳
-  .opencode/skills/openspec-*/  # 8 个 vendored openspec skill
+  src/commands/                # 6 个 /devflow:* 命令薄壳(install 时拷到目标 .opencode/commands/)
+  .opencode/skills/            # 3 vendored openspec 补 skill(verify/new/continue-change;init 不生成)
   docs/
     devflow-design.md           # 设计文档(选型/思路/取舍)
 ```
 
-> superpowers 是全局插件,**不 vendor**——每个 opencode 项目自动可用,故 `.opencode/skills/` 下只有 openspec。
+> devflow 仓库只 vendor 3 个 init 不生成的 openspec 补 skill(verify/new/continue-change);其余 install 时从 openspec CLI + 全局 superpowers 现取,用 canonical 最新版。
 
 ## 文档
 

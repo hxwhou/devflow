@@ -26,7 +26,7 @@
 | 3 | apply 执行 | inline / superpowers 原生 subagent / 条件式 | **条件式** | 默认 inline 保控制力;≥4 无依赖 task 才并行 |
 | 4 | 文档结构 | 单 AGENTS.md / AGENTS.md+命令 / 单 skill | **AGENTS.md + 6 个 /devflow 命令薄壳** | AGENTS.md 是单一真相源,命令只按需注入该阶段指南;ergonomic + 仍 100% markdown |
 | 5 | 创建位置 | 新仓库 / 就地 easyflow-test | **新仓库 D:\09-opencode\devflow** | 干净独立,不污染分析仓 |
-| 6 | openspec skills 来源 | vendor / 跑 openspec init | **vendor** | install.mjs 复制进目标项目;git clone 亦可直接当模板,免二次 init |
+| 6 | openspec skills 来源 | vendor / 跑 openspec init | **跑 openspec init** | install 时 `openspec init --tools opencode` 现取(canonical、最新),后删 `/opsx-*` 命令只要 skills;除 3 个补 skill(verify/new/continue-change,init 不生成)vendor 外,仓库不携带副本 |
 | 7 | vendor 范围 | 全 11 个 / 只用到的 | **只用到的 8 个** | 用户要求精简;验依赖后定 8(见 §4.3) |
 | 8 | /init 防护 | 现状靠 git / 重构 opencode.json instructions | **重构** | /init 对已存在 AGENTS.md 是 merge(不毁但污染);rules 挪出 AGENTS.md + 用官方 instructions 自动加载(见 §3.8) |
 
@@ -77,23 +77,22 @@
 ### 4.1 文件布局
 ```
 D:\09-opencode\devflow\
-  install.mjs                        # 跨平台安装器:把框架装进已有项目(内嵌 openspec/config 模板)
+  install.mjs                        # 跨平台安装器:openspec init + 复制 superpowers + devflow 文件
   opencode.json                      # instructions: ["devflow-rules.md"] — 自动加载规则到 context
   AGENTS.md                          # 瘦桩:指路 + /init 防护(/init 只改此桩)
-  .opencode/commands/
+  src/commands/                     # 6 个 /devflow:* 命令薄壳(install 时拷到目标 .opencode/commands/)
     devflow-brainstorm.md            # /devflow:brainstorm
     devflow-propose.md               # /devflow:propose
     devflow-review.md                # /devflow:review
     devflow-apply.md                 # /devflow:apply
     devflow-audit.md                 # /devflow:audit
     devflow-archive.md               # /devflow:archive
-  .opencode/skills/openspec-*/       # 8 个 openspec skill(vendored)
+  .opencode/skills/                  # 3 vendored openspec 补 skill(verify/new/continue-change;init 不生成)
   .gitignore
   devflow-rules.md              # 真相源:6 阶段 + 全局规则 + checklist(/init 不碰)
   docs/devflow-design.md             # 本设计文档
 ```
-- superpowers:全局 opencode 插件,**不 vendor**(引用即可)
-- openspec skills:**vendor**(纯 markdown,自包含)
+- skills 绝大多数不预置:install 时 `openspec init` 现取 6 个 openspec skill(canonical)+ 从全局 superpowers 复制 11 个;唯独 verify/new/continue-change 这 3 个 init 不生成,devflow 仓库 vendor 补拷
 
 ### 4.2 六阶段 skill 映射
 | 阶段 | 命令 | 入口 skill | 产出 | 出口 |
@@ -123,7 +122,7 @@ D:\09-opencode\devflow\
 - **AGENTS.md 瘦桩**:一句话定位 + 指路(`/devflow:brainstorm` 开始)+ rules 已自动加载的说明 + /init 防护提醒
 - **devflow-rules.md 真相源**(opencode.json `instructions` 自动加载):
   - 定位(一句话)
-  - 前置依赖(opencode+superpowers 全局;openspec CLI;openspec skills 已 vendor)
+  - 前置依赖(opencode + superpowers 全局;openspec CLI;skills install 时现取)
   - 6 阶段总览表
   - 全局规则(change_id 统一键 / worktree 用 superpowers / TDD prose 约定 / apply 条件式判定 / [devflow] 状态行)
   - 每阶段入口/出口 checklist(prose)
@@ -175,9 +174,8 @@ description: "<阶段一句话>"
 | 一条龙串接(fast-track) | fast-track 同会话串 propose→apply→archive,中途不停 |
 
 ## 6. 前置依赖
-- opencode + superpowers 插件(全局,marketplace 装)
-- openspec CLI(`@fission-ai/openspec` 或 `@studyzy/openspec-cn`,Node ≥20.19)——archive 阶段用
-- 项目内 openspec skills 已 vendor(本模板自带 8 个,无需再 init)
+- opencode + superpowers 插件(全局,marketplace 装)——install 时作 superpowers skills 复制源
+- openspec CLI(`@fission-ai/openspec` 或 `@studyzy/openspec-cn`,Node ≥20.19)——`openspec init` 生成 openspec skills + archive 用
 
 ## 7. 实施步骤
 1. 建仓 `D:\09-opencode\devflow\` + `git init`
@@ -185,21 +183,20 @@ description: "<阶段一句话>"
 3. Vendor 8 个 openspec skill(从 `easyflow-demo/.opencode/skills/openspec-*/` 拷净,已验零 easyflow 耦合)
 4. 写 `openspec/config.yaml`(最小配置)
 5. 写 `AGENTS.md`(瘦桩)+ `opencode.json`(instructions)+ `devflow-rules.md`(真相源)
-6. 写 6 个命令薄壳 `.opencode/commands/devflow-*.md`
+6. 写 6 个命令薄壳 `src/commands/devflow-*.md`
 7. `git add -A` + commit `feat: devflow framework — pure-doc orchestration of openspec + superpowers`
 8. 验证:tree 列表;抽检 AGENTS.md + 一个命令 frontmatter;(可选)小变更试跑 `/devflow:brainstorm`
 
 ## 8. 附录:skill 使用总览
 
-### OpenSpec(vendor 8 个)
-- **核心 4**:openspec-propose / openspec-apply-change / openspec-verify-change / openspec-archive-change
-- **传递依赖 1**:openspec-sync-specs(archive 内含)
-- **可选/备选 3**:openspec-explore / openspec-new-change / openspec-continue-change
-- **不 vendor 4**:openspec-ff-change / openspec-bulk-archive-change / openspec-onboard / openspec-update-change
+### OpenSpec(install 时 `openspec init` 现取)
+- `openspec init --tools opencode` 现取当前 canonical 集(propose / apply-change / archive-change / explore / sync-specs / update-change 等,以实际 CLI 版本为准)
+- init 后删 `/opsx-*` 命令(只留 skills;devflow 用 `/devflow:*` 包装,不要 openspec 的直发命令)
+- `openspec-verify-change`(archive full)/ `openspec-new-change`、`openspec-continue-change`(propose 备选)——init 默认不生成,devflow 仓库 vendor 这 3 个(1.8.0 canonical 内容)补拷
 
-### Superpowers(全局引用,不 vendor)
+### Superpowers(install 时从全局复制 11 个)
 - **核心 7**:brainstorming / writing-plans / using-git-worktrees / test-driven-development / requesting-code-review / verification-before-completion / finishing-a-development-branch
 - **条件/按需 4**:dispatching-parallel-agents / executing-plans(或 subagent-driven-development)/ systematic-debugging(出 bug 时)/ receiving-code-review(收到评审反馈时)
-- **不用**:using-superpowers(meta 后台)/ writing-skills(meta 写 skill 用)
+- **不复制**:using-superpowers(bootstrap,harness 自动从全局加载)/ writing-skills(meta)/ subagent-driven-development(executing-plans 的备选,留全局兜底)
 
-核心串联 = OpenSpec 4 + Superpowers 7 = **11 个 skill**;另 4+3 个条件/按需/备选。
+Superpowers 复制 11(核心 7 + 条件 4);OpenSpec 由 init 提供 canonical 集。

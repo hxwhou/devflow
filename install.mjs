@@ -5,6 +5,10 @@
 // Skills are NOT vendored in this repo — fetched at install time:
 //   - openspec skills: `openspec init --tools opencode` (canonical CLI, always current)
 //   - superpowers skills: copied from the global superpowers install
+//
+// Prerequisites (superpowers global dir + all referenced skills + 3 vendored openspec
+// skills in this source repo) are validated up front — fail-fast before any writes to
+// target, so a broken environment never leaves a half-installed project.
 
 import { readFile, writeFile, mkdir, readdir, copyFile, stat, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -86,7 +90,7 @@ async function copyOpenspecSupplementSkills() {
   let copied = 0;
   for (const name of OPENSPEC_SUPPLEMENT_SKILLS) {
     const src = join(srcBase, name);
-    if (!existsSync(src)) { console.warn(`  ! vendored openspec skill missing in source: ${name}`); continue; }
+    if (!existsSync(src)) throw new Error(`vendored openspec skill missing in source (repo corrupted?): ${name}`);
     await copyDir(src, join(dst, name));
     copied++;
   }
@@ -102,7 +106,7 @@ async function copySuperpowersSkills() {
   let copied = 0;
   for (const name of SUPERPOWERS_SKILLS) {
     const src = join(spDir, name);
-    if (!existsSync(src)) { console.warn(`  ! superpowers skill missing in global install, skipped: ${name}`); continue; }
+    if (!existsSync(src)) throw new Error(`superpowers skill missing in global install: ${name}`);
     await copyDir(src, join(dst, name));
     copied++;
   }
@@ -141,10 +145,33 @@ async function mergeAgents() {
   return existing ? 'appended' : 'created';
 }
 
+async function checkPrerequisites() {
+  const missing = [];
+
+  const spDir = superpowersDir();
+  if (!existsSync(spDir)) {
+    missing.push(`superpowers skills dir not found: ${spDir}\n    -> install superpowers globally (opencode marketplace), then re-run`);
+  } else {
+    for (const name of SUPERPOWERS_SKILLS) {
+      if (!existsSync(join(spDir, name))) missing.push(`superpowers skill missing in global install: ${name}`);
+    }
+  }
+
+  const srcSkills = join(SOURCE, '.opencode', 'skills');
+  for (const name of OPENSPEC_SUPPLEMENT_SKILLS) {
+    if (!existsSync(join(srcSkills, name))) missing.push(`vendored openspec skill missing in source repo: ${name}\n    -> re-clone devflow (.opencode/skills/${name} is committed)`);
+  }
+
+  if (missing.length) {
+    throw new Error(`prerequisites missing — fix before install:\n  - ${missing.join('\n  - ')}`);
+  }
+}
+
 async function main() {
   if (!existsSync(TARGET)) throw new Error(`target dir not found: ${TARGET}`);
   if (!(await stat(TARGET)).isDirectory()) throw new Error(`target is not a dir: ${TARGET}`);
 
+  await checkPrerequisites();
   runOpenspecInit();
   const removedOpsx = await cleanOpsxCommands();
   const oss = await copyOpenspecSupplementSkills();

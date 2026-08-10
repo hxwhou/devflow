@@ -72,12 +72,17 @@
 - **drop-in 注入**:`install.mjs` 把瘦桩以 `<!-- devflow:start -->…<!-- devflow:end -->` 标记块注入用户**已有** `AGENTS.md`(有则替换、无则追加,幂等),不碰用户自有内容;`opencode.json` 同理 merge `instructions`(去重),`openspec/config.yaml` 仅当不存在才落。
 - **对比 easyflow**:easyflow 的 AGENTS.md 是自写分析仓的、不暴露给 /init;devflow 作为可分发模板必须考虑用户跑 /init 的场景。
 
+### 3.9 install 前置校验(fail-fast)
+- **决策**:`install.mjs` 在写 target 之前先聚合校验——superpowers 全局目录在 + 12 个引用 skill 全在 + 3 个 vendored openspec skill 全在 source 仓;缺任一项就抛一条聚合 Error 退出,**不往 target 写任何东西**。单个 skill 缺失也 throw(缺关键 skill 框架会 runtime 炸,不如 install 时直接报)。
+- **逻辑**:原本 superpowers 目录检查在 `copySuperpowersSkills` 里,发生在 `openspec init` 之后——缺 superpowers 时 target 已被 openspec init 写了一半(openspec/、3 vendored skill),用户得手清。前置校验把检查挪到最前,写之前就 fail。聚合报错避免 fix-one-rerun-find-next。
+- **对比 easyflow**:easyflow 靠 install tooling(sources.js / eflow-lock / npm 包);devflow 用一个函数 + existsSync 清单,零依赖。
+
 ## 4. 框架结构
 
 ### 4.1 文件布局
 ```
 D:\09-opencode\devflow\
-  install.mjs                        # 跨平台安装器:openspec init + 复制 superpowers + devflow 文件
+  install.mjs                        # 跨平台安装器:前置校验(fail-fast)+ openspec init + 复制 superpowers + devflow 文件
   opencode.json                      # instructions: ["devflow-rules.md"] — 自动加载规则到 context
   AGENTS.md                          # 瘦桩:指路 + /init 防护(/init 只改此桩)
   src/commands/                     # 6 个 /devflow:* 命令薄壳(install 时拷到目标 .opencode/commands/)

@@ -46,7 +46,7 @@ opencode
 
 在 opencode 里跑 `/devflow:brainstorm`,或直接说"建一个 X 功能"——agent 读 `AGENTS.md` + `devflow-rules.md` 自动按流程走。
 
-**`install.mjs` 干了什么**:跑 `openspec init` 现取 openspec skills + `openspec/config.yaml`,删 openspec 的 `/opsx-*` 命令(devflow 用 `/devflow:*`);补拷 3 个 init 不生成的 openspec skill(verify/new/continue-change,devflow 仓库 vendor);从全局 superpowers 复制 12 个 workflow skill;复制 `devflow-rules.md` + 6 命令薄壳;合并 `opencode.json`(加 `instructions: ["devflow-rules.md"]`)和 `AGENTS.md`(注入标记块,**不碰你已有的内容**)。幂等,可重跑。零依赖,跨平台(Node ≥20.19 本就是 openspec CLI 前置)。
+**`install.mjs` 干了什么**:先**前置校验**(superpowers 全局目录 + 12 个引用 skill + 3 个 vendored 全在,缺则聚合报错退出,**不写 target**);再跑 `openspec init` 现取 openspec skills + `openspec/config.yaml`,删 openspec 的 `/opsx-*` 命令(devflow 用 `/devflow:*`);补拷 3 个 init 不生成的 openspec skill(verify/new/continue-change,devflow 仓库 vendor);从全局 superpowers 复制 12 个 workflow skill;复制 `devflow-rules.md` + 6 命令薄壳;合并 `opencode.json`(加 `instructions: ["devflow-rules.md"]`)和 `AGENTS.md`(注入标记块,**不碰你已有的内容**)。幂等,可重跑。零依赖,跨平台(Node ≥20.19 本就是 openspec CLI 前置)。
 
 **代理自判 route**:agent 读完你的请求即判走哪条,打 `[devflow] 判定 ...`,你可一句话覆盖。
 - **fast-track**(小改动:单文件 / ≤5 task / 无跨切面):一条龙串接 propose→apply→archive,跳 review/audit,pre-design 留对话不落盘

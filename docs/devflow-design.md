@@ -27,18 +27,18 @@
 | 4 | 文档结构 | 单 AGENTS.md / AGENTS.md+命令 / 单 skill | **AGENTS.md + 6 个 /devflow 命令薄壳** | AGENTS.md 是单一真相源,命令只按需注入该阶段指南;ergonomic + 仍 100% markdown |
 | 5 | 创建位置 | 新仓库 / 就地 easyflow-test | **新仓库 D:\09-opencode\devflow** | 干净独立,不污染分析仓 |
 | 6 | openspec skills 来源 | vendor / 跑 openspec init | **跑 openspec init** | install 时 `openspec init --tools opencode` 现取(canonical、最新),后删 `/opsx-*` 命令只要 skills;除 3 个补 skill(verify/new/continue-change,init 不生成)vendor 外,仓库不携带副本 |
-| 7 | vendor 范围 | 全 11 个 / 只用到的 | **只用到的 8 个** | 用户要求精简;验依赖后定 8(见 §4.3) |
+| 7 | vendor 范围 | 全部 vendor / 仅补 init 缺的 | **仅 3 个(verify/new/continue-change)** | init 产 6 个常用 openspec skill(propose/apply-change/archive-change/explore/sync-specs/update-change);唯独这 3 init 不生成,仓库 vendor 补拷(见 §4.3) |
 | 8 | /init 防护 | 现状靠 git / 重构 opencode.json instructions | **重构** | /init 对已存在 AGENTS.md 是 merge(不毁但污染);rules 挪出 AGENTS.md + 用官方 instructions 自动加载(见 §3.8) |
 
 ## 3. 实现思路与逻辑(关键决策)
 
 ### 3.1 audit 不用 scorer 脚本
-- **决策**:audit 阶段跑目标项目自身 tooling(`npm test` / lint / coverage)+ `superpowers:requesting-code-review` + prose checklist。
+- **决策**:audit 阶段跑目标项目自身 tooling(`npm test` / lint / coverage)+ `requesting-code-review` + prose checklist。
 - **逻辑**:纯文档跑不了 bash scorer;覆盖率/代码质量靠项目已有工具 + code-review skill,框架不自带。
 - **对比 easyflow**:砍掉 5 个 scorers/*.sh + metrics.json + audit/SKILL.md 的 scorer 调度逻辑。
 
 ### 3.2 review 不用 config/challenger
-- **决策**:review = `superpowers:writing-plans`(refine tasks)+ 自检 checklist(架构/数据流/边界/测试覆盖/性能 五问)+ 可选一次性 cross-review subagent(`task` 工具 general,读 proposal+tasks+design 找漏洞)。
+- **决策**:review = `writing-plans`(refine tasks)+ 自检 checklist(架构/数据流/边界/测试覆盖/性能 五问)+ 可选一次性 cross-review subagent(`task` 工具 general,读 proposal+tasks+design 找漏洞)。
 - **逻辑**:避免 easyflow 的 config.yaml(challenger.enabled/model/prompt_mode)复杂度;cross-review 用通用 subagent 一次跑完,不常驻。
 - **对比 easyflow**:砍掉 plan-review/config.yaml + challenger 机制。
 
@@ -48,7 +48,7 @@
 - **对比 easyflow**:easyflow H13 **禁用** superpowers 两个 driver、自写 agent-selector;devflow 反其道——直接用 superpowers 原生路径,砍掉 agent-selector。
 
 ### 3.4 worktree 用 superpowers 原生
-- **决策**:apply 隔离用 `superpowers:using-git-worktrees`;archive 合回用 `superpowers:finishing-a-development-branch` 走纯 git ff-merge/rebase。
+- **决策**:apply 隔离用 `using-git-worktrees`;archive 合回用 `finishing-a-development-branch` 走纯 git ff-merge/rebase。
 - **逻辑**:不自制 worktree-create.sh / worktree-rebase-ff.sh。easyflow 的 worktree-rebase-ff.sh 硬依赖 `origin/HEAD`(remote),无 remote 项目必败(exit 3);用原生 skill + 纯 git 命令规避此坑。
 - **对比 easyflow**:砍掉 worktree-create.sh / worktree-rebase-ff.sh / harness-sync.sh / ship-cleanup.sh。
 
@@ -104,30 +104,31 @@ D:\09-opencode\devflow\
 | 5 audit | /devflow:audit | 项目 tooling + `requesting-code-review` + checklist | audit notes | 问题归档或修 |
 | 6 archive | /devflow:archive | `verification-before-completion`→`finishing-a-development-branch`→`openspec-verify-change`→`openspec-archive-change`(内含 sync-specs) | master clean + 归档 + specs 同步 | 归档完成 |
 
-### 4.3 vendor 清单(8 个 openspec skill)
-| skill | 阶段 | 角色 |
-|---|---|---|
-| openspec-propose | P2 | 核心 |
-| openspec-new-change | P2 | 备选(逐步) |
-| openspec-continue-change | P2 | 备选(逐步) |
-| openspec-explore | P1 | 可选 |
-| openspec-apply-change | P4 | 核心 |
-| openspec-verify-change | P6 | 核心 |
-| openspec-archive-change | P6 | 核心 |
-| openspec-sync-specs | P6 | **archive 的传递依赖**(archive L120/L175 内部调) |
+### 4.3 openspec skill 清单(devflow 用 9 个:vendored 3 + init 6)
+| skill | 阶段 | 来源 | 角色 |
+|---|---|---|---|
+| openspec-propose | P2 | init | 核心 |
+| openspec-apply-change | P4 | init | 核心 |
+| openspec-archive-change | P6 | init | 核心(内含 sync-specs) |
+| openspec-explore | P1 | init | 可选 |
+| openspec-sync-specs | P6 | init | archive 的传递依赖 |
+| openspec-update-change | — | init | init 携带,devflow 不引用(无害冗余) |
+| openspec-verify-change | P6 | **vendor** | 核心(archive full) |
+| openspec-new-change | P2 | **vendor** | 备选(propose 逐步) |
+| openspec-continue-change | P2 | **vendor** | 备选(propose 逐步) |
 
-**不 vendor(4 个)**:openspec-ff-change / openspec-bulk-archive-change / openspec-onboard / openspec-update-change
+> init 产 6 个常用 skill(canonical,随 CLI 版本演进);唯独 verify/new/continue-change 这 3 init 默认不生成,devflow 仓库 vendor 补拷(1.8.0 canonical 内容,升 CLI 大版本时需重拷对齐)。openspec 其余 skill(ff-change / bulk-archive-change / onboard)devflow 不用,init 也不产。
 
 ### 4.4 AGENTS.md(瘦桩)+ devflow-rules.md(真相源)
 - **AGENTS.md 瘦桩**:一句话定位 + 指路(`/devflow:brainstorm` 开始)+ rules 已自动加载的说明 + /init 防护提醒
 - **devflow-rules.md 真相源**(opencode.json `instructions` 自动加载):
   - 定位(一句话)
-  - 前置依赖(opencode + superpowers 全局;openspec CLI;skills install 时现取)
-  - 6 阶段总览表
-  - 全局规则(change_id 统一键 / worktree 用 superpowers / TDD prose 约定 / apply 条件式判定 / [devflow] 状态行)
-  - 每阶段入口/出口 checklist(prose)
-  - 取舍说明(砍 easyflow 什么、保留什么)
-  - 命令清单
+  - 前置依赖(opencode + superpowers 全局;openspec CLI;skills install 时现取;plugin-less 运行时)
+  - 规模判定(fast-track / full 启发式 + 复判升级)
+  - 6 阶段总览表(skill + full / fast-track 列)
+  - 出口(阶段边界,每阶段一行)
+  - 全局规则(change_id 统一键 / worktree / TDD prose / apply 条件式判定 / 不回写 / subagent 评审 / [devflow] 状态行)
+  - 每阶段入口/出口 checklist 见 `.opencode/commands/devflow-*.md`(按需注入,不在 rules.md 内);取舍说明见本文 §5;命令清单见 README
 - **opencode.json**:`{ "$schema": "...", "instructions": ["devflow-rules.md"] }`
 
 ### 4.5 命令薄壳模板
@@ -151,7 +152,7 @@ description: "<阶段一句话>"
 |---|---|
 | bash hooks ×12 | 纯文档跑不了;改 prose 约定或依赖 skill 自带 |
 | scorers ×5 + metrics | audit 改用项目 tooling + code-review skill |
-| policies 子文件 | 直接用 superpowers:brainstorming 自带 |
+| policies 子文件 | 直接用 brainstorming 自带 |
 | hard-stops(H8/H10/H13) | 不需要;直接用 superpowers 原生 subagent 路径 |
 | agent-selector | apply 条件式自决 |
 | install tooling | install.mjs(Node,跨平台,零依赖);或 git clone 当模板 |
